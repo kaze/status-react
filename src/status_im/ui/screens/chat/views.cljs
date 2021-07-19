@@ -125,7 +125,7 @@
       (str
        (i18n/label :t/empty-chat-description-one-to-one)
        contact-name)])
-   (when-not contact-added?
+   (when-not (and contact-added? no-messages?)
      [contact-request chat-id])])
 
 (defn chat-intro-one-to-one [{:keys [chat-id chat-type] :as opts}]

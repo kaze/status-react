@@ -1303,6 +1303,12 @@
    (:editing-message metadata)))
 
 (re-frame/reg-sub
+ :chats/sending-contact-request
+ :<- [:chats/current-chat-inputs]
+ (fn [{:keys [metadata]}]
+   (:sending-contact-request metadata)))
+
+(re-frame/reg-sub
  :chats/sending-image
  :<- [:chats/current-chat-inputs]
  (fn [{:keys [metadata]}]
@@ -1323,22 +1329,27 @@
  :<- [:current-chat/metadata]
  :<- [:chats/reply-message]
  :<- [:chats/edit-message]
- (fn [[{:keys [processing]} sending-image mainnet? one-to-one-chat? {:keys [public?]} reply edit]]
+ :<- [:chats/sending-contact-request]
+ (fn [[{:keys [processing]} sending-image mainnet? one-to-one-chat? {:keys [public?]} reply edit sending-contact-request]]
    (let [sending-image (seq sending-image)]
      {:send          (not processing)
       :stickers      (and mainnet?
                           (not sending-image)
+                          (not sending-contact-request)
                           (not reply))
       :image         (and (not reply)
                           (not edit)
+                          (not sending-contact-request)
                           (not public?))
       :extensions    (and one-to-one-chat?
                           (or config/commands-enabled? mainnet?)
                           (not edit)
+                          (not sending-contact-request)
                           (not reply))
       :audio         (and (not sending-image)
                           (not reply)
                           (not edit)
+                          (not sending-contact-request)
                           (not public?))
       :sending-image sending-image})))
 

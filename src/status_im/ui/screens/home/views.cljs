@@ -26,6 +26,33 @@
             ["react-native-navigation" :refer (Navigation)])
   (:require-macros [status-im.utils.views :as views]))
 
+(defn contact-request-number-indicator [amount]
+  [react/view {:style {:height 22
+                       :width 22
+                       :border-radius 11
+                       :background-color colors/blue
+                       :justify-content :center
+                       :align-items :center}}
+   [quo/text {:weight :medium
+              :color :inverse
+              :size :small}
+    amount]])
+
+(defn contact-request-indicator []
+  [react/touchable-opacity {:style {:height 47
+                                    :width "100%"
+                                    :border-top-width 1
+                                    :border-bottom-width 1
+                                    :border-color colors/gray-lighter}}
+   [react/view {:style {:flex 1
+                        :flex-direction :row
+                        :padding-horizontal 16
+                        :align-items :center
+                        :justify-content :space-between}}
+    [quo/text {:weight :medium}
+     "👋  Contact requests"]
+    [contact-request-number-indicator 1]]])
+
 (defn home-tooltip-view []
   [react/view (styles/chat-tooltip)
    [react/view {:style {:width       66 :position :absolute :top -6 :background-color colors/white
@@ -135,6 +162,7 @@
         :header                       [:<>
                                        (when (or (seq items) @search-active? (seq search-filter))
                                          [search-input-wrapper search-filter (empty? items)])
+                                       [contact-request-indicator]
                                        [referral-item/list-item]
                                        (when (and (empty? items)
                                                   (or @search-active? (seq search-filter)))

@@ -20,6 +20,7 @@
 (def light-theme
   {:positive-01    "rgba(68,208,88,1)"     ; Primary Positive, text, icons color
    :positive-02    "rgba(78,188,96,0.1)"   ; Secondary Positive, Supporting color for success illustrations
+   :positive-03    "rgba(78,188,96,1)"     ; Lighter Positive, Supporting color for success illustrations
    :negative-01    "rgba(255,45,85,1)"     ; Primary Negative, text, icons color
    :negative-02    "rgba(255,45,85,0.1))"  ; Secondary Negative, Supporting color for errors illustrations
    :warning-01     "rgba(255, 202, 15, 1)"
@@ -51,6 +52,7 @@
 (def dark-theme
   {:positive-01    "rgba(68,208,88,1)"
    :positive-02    "rgba(78,188,96,0.1)"
+   :positive-03    "rgba(78,188,96,1)"
    :negative-01    "rgba(252,95,95,1)"
    :negative-02    "rgba(252,95,95,0.1)"
    :warning-01     "rgba(255, 202, 15, 1)"

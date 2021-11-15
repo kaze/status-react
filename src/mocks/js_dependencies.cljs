@@ -212,6 +212,12 @@
 (def react-native-notifications
   #js {:Notifications #js {}})
 
+(def wallet-connect-client #js {:default       #js {}
+                                :CLIENT_EVENTS #js {:session #js {:request nil
+                                                                  :created nil
+                                                                  :deleted nil
+                                                                  :proposal nil}}})
+
 ;; Update i18n_resources.cljs
 (defn mock [module]
   (case module
@@ -249,6 +255,7 @@
     "react-native-draggable-flatlist" react-native-draggable-flatlist
     "./fleets.js" default-fleets
     "./chats.js" default-chats
+    "@walletconnect/client" wallet-connect-client
     "../translations/ar.json" (js/JSON.parse (slurp "./translations/ar.json"))
     "../translations/de.json" (js/JSON.parse (slurp "./translations/de.json"))
     "../translations/en.json" (js/JSON.parse (slurp "./translations/en.json"))

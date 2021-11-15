@@ -41,7 +41,8 @@
             [status-im.data-store.visibility-status-updates :as visibility-status-updates-store]
             [status-im.ui.components.react :as react]
             [status-im.utils.platform :as platform]
-            [status-im.ethereum.tokens :as tokens]))
+            [status-im.ethereum.tokens :as tokens]
+            [status-im.utils.wallet-connect :as wallet-connect]))
 
 (re-frame/reg-fx
  ::initialize-communities-enabled
@@ -80,6 +81,20 @@
  ::enable-local-notifications
  (fn []
    (status/start-local-notifications)))
+
+(re-frame/reg-fx
+ ::initialize-wallet-connect
+ (fn []
+   (wallet-connect/init
+    #(re-frame/dispatch [:wallet-connect/client-init %])
+    #(log/error "[wallet-connect]" %))))
+
+(re-frame/reg-fx
+ ::initialize-wallet-connect
+ (fn []
+   (async-storage/get-item
+    :wallet-connect-enabled?
+    #(re-frame/dispatch [:multiaccounts.ui/switch-wallet-connect-enabled %]))))
 
 (defn rpc->accounts [accounts]
   (reduce (fn [acc {:keys [chat type wallet] :as account}]
@@ -315,6 +330,10 @@
   [cofx]
   {::initialize-transactions-management-enabled nil})
 
+(fx/defn initialize-wallet-connect
+  [cofx]
+  {::initialize-wallet-connect nil})
+
 (fx/defn get-node-config-callback
   {:events [::get-node-config-callback]}
   [{:keys [db] :as cofx} node-config-json]
@@ -349,6 +368,7 @@
               (acquisition/login)
               (initialize-appearance)
               (initialize-communities-enabled)
+              (initialize-wallet-connect)
               (get-node-config)
               (communities/fetch)
               (logging/set-log-level (:log-level multiaccount))

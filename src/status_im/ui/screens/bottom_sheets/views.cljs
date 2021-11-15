@@ -6,6 +6,7 @@
             [status-im.ui.screens.multiaccounts.key-storage.views :as key-storage]
             [status-im.ui.screens.about-app.views :as about-app]
             [status-im.ui.screens.multiaccounts.recover.views :as recover.views]
+            [status-im.ui.screens.wallet-connect.session-proposal.views :as wallet-connect.views]
             [quo.core :as quo]))
 
 (defn bottom-sheet []
@@ -37,7 +38,13 @@
           (merge recover.views/bottom-sheet)
 
           (= view :migrate-account-password)
-          (merge key-storage/migrate-account-password))]
+          (merge key-storage/migrate-account-password)
+
+          (= view :wallet-connect-session-proposal)
+          (merge wallet-connect.views/bottom-sheet)
+
+          (= view :wallet-connect-session-connected)
+          (merge wallet-connect.views/success-sheet))]
     [quo/bottom-sheet opts
      (when content
        [content])]))

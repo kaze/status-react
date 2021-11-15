@@ -86,3 +86,8 @@
   [_]
   {:hide-select-acc-sheet nil})
 
+(fx/defn hide-wallet-connect-sheet
+  {:events [:hide-wallet-connect-sheet]}
+  [_]
+  {:hide-wallet-connect-sheet nil})
+

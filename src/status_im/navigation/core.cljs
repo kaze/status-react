@@ -159,7 +159,7 @@
    (.events Navigation)
    (fn [^js evn]
      (let [view-id (keyword (.-componentName evn))]
-       (when-not (#{"popover" "bottom-sheet" "signing-sheet" "visibility-status-popover"}
+       (when-not (#{"popover" "bottom-sheet" "signing-sheet" "visibility-status-popover" "wallet-connect-sheet"}
                   (.-componentName evn))
          (re-frame/dispatch [::view-disappeared view-id])
          (doseq [[_ {:keys [ref value]}] @quo.text-input/text-input-refs]
@@ -337,6 +337,17 @@
 
 (re-frame/reg-fx :show-bottom-sheet (fn [] (show-overlay "bottom-sheet")))
 (re-frame/reg-fx :hide-bottom-sheet (fn [] (dissmiss-overlay "bottom-sheet")))
+
+;; WALLET CONNECT
+
+(defonce wallet-connect-sheet-reg
+  (.registerComponent Navigation
+                      "wallet-connect-sheet"
+                      (fn [] (gestureHandlerRootHOC views/wallet-connect-comp))
+                      (fn [] views/wallet-connect-comp)))
+
+(re-frame/reg-fx :show-wallet-connect-sheet (fn [] (show-overlay "wallet-connect-sheet")))
+(re-frame/reg-fx :hide-wallet-connect-sheet (fn [] (dissmiss-overlay "wallet-connect-sheet")))
 
 ;; SIGNING
 

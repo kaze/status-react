@@ -60,7 +60,8 @@
             [status-im.wallet.core :as wallet]
             status-im.wallet.custom-tokens.core
             [status-im.navigation.core :as navigation.core]
-            [status-im.multiaccounts.login.core :as login.core]))
+            [status-im.multiaccounts.login.core :as login.core]
+            status-im.wallet-connect.core))
 
 (re-frame/reg-fx
  :dismiss-keyboard

@@ -8,7 +8,8 @@
             [status-im.utils.wallet-connect :as wallet-connect]
             [status-im.browser.core :as browser]
             [taoensso.timbre :as log]
-            [status-im.async-storage.core :as async-storage]))
+            [status-im.async-storage.core :as async-storage]
+            [status-im.utils.config :as config]))
 
 (fx/defn switch-wallet-connect-enabled
   {:events [:multiaccounts.ui/switch-wallet-connect-enabled]}
@@ -77,7 +78,7 @@
         ;; TODO: Check for unsupported
         metadata (get db :wallet-connect/proposal-metadata)
         response {:state {:accounts accounts}
-                  :metadata wallet-connect/default-metadata}
+                  :metadata config/default-wallet-connect-metadata}
         active-topics (or (:wallet-connect/active-topics db) {})
         new-active-topics (assoc active-topics topic proposal)]
     (-> ^js client

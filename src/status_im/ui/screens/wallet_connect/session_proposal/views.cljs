@@ -10,7 +10,9 @@
             [status-im.ui.screens.browser.accounts :as accounts]
             [status-im.ui.components.bottom-panel.views :as bottom-panel]
             [status-im.ui.components.chat-icon.screen :as chat-icon]
-            [status-im.ui.screens.wallet-connect.session-proposal.styles :as styles]))
+            [status-im.ui.screens.wallet-connect.session-proposal.styles :as styles]
+            [status-im.ui.components.list.views :as list]
+            [reagent.core :as reagent]))
 
 (defn circle [{:keys [color size style icon icon-size icon-color]}]
   [react/view
@@ -39,12 +41,8 @@
 (defn toolbar-selection [{:keys [text background-color on-press]}]
   [react/touchable-opacity {:on-press on-press}
    [react/view {:style (styles/toolbar-container background-color)}
-    [icons/icon
-     :main-icons/billfold
-     {:color  (:text-05 @colors/theme)
-      :width  billfold-icon-container-width
-      :height billfold-icon-container-height}]
     [quo/text {:color :inverse
+               :weight :medium
                :style styles/toolbar-text}
      text]
     [icons/icon
@@ -52,6 +50,50 @@
      {:color  (:text-05 @colors/theme)
       :width  chevron-icon-container-width
       :height chevron-icon-container-height}]]])
+
+;; (def selected-account (reagent/atom nil))
+
+(defn render-account [{:keys [address name color] :as account} _ _ {:keys [selected-account]}]
+  (println account "FDSFSFDSFDSF")
+  (let [account-selected? (= (:address @selected-account) address)]
+    [react/touchable-without-feedback {:on-press #(reset! selected-account (merge {} account))}
+     [react/view {:style {:height 34
+                          :background-color color
+                          :border-radius 17
+                          :padding-horizontal 10
+                          :justify-content :center
+                          :margin-right 4
+                          :opacity (if account-selected? 1 0.5)}}
+      [quo/text {:color :inverse
+                 :weight (if account-selected? :medium :regular)}
+       name]]]))
+
+(defn account-picker [accounts selected-account]
+  (println accounts "FDSDFDSFSDFFSDFSD")
+  (if (> (count accounts) 1)
+    [react/view {:style {:height 80
+                         :width "100%"
+                         :justify-content :center
+                         :padding-horizontal 16
+                         :margin-top 40}}
+     [react/view
+      [quo/text {:size :small} "Select account"]
+      [list/flat-list {:data        accounts
+                       :key-fn      :address
+                       :render-fn   render-account
+                       :render-data {:selected-account selected-account}
+                       :horizontal  true
+                       :shows-horizontal-scroll-indicator false
+                       :extraData @selected-account
+                       :style {:height 40
+                               :width "100%"
+                               :margin-top 10}}]]]
+    [react/view {:style {:height 100
+                         :width "100%"
+                         :align-items :center
+                         :padding-top 8}}
+     [toolbar-selection {:text  (:name @selected-account)
+                         :background-color (:color @selected-account)}]]))
 
 (def tiny-circle-size 4)
 
@@ -108,70 +150,46 @@
             :on-press #(re-frame/dispatch [:bottom-sheet/hide])}
            (i18n/label :t/wallet-connect-go-back)]]]]])))
 
-(defn session-proposal-sheet [{:keys [name icons]}]
+(defview session-proposal-sheet [{:keys [name icons]}]
   (let [visible-accounts @(re-frame/subscribe [:visible-accounts-without-watch-only])
         dapps-account @(re-frame/subscribe [:dapps-account])
         icon-uri (when (and icons (> (count icons) 0)) (first icons))
-        accounts  @(re-frame/subscribe [:multiaccount/visible-accounts])]
-    [react/view {:style styles/acc-sheet}
-     [react/view styles/proposal-sheet-container
-      [react/view styles/proposal-sheet-header
-       [react/image {:style styles/dapp-logo
-                     :source {:uri icon-uri}}]
-       [circle {:color (:interactive-02 @colors/theme)
-                :size  tiny-circle-size
-                :style (styles/circle true)}]
-       [circle {:color (:interactive-02 @colors/theme)
-                :size  tiny-circle-size
-                :style (styles/circle true)}]
-       [circle {:color (:interactive-02 @colors/theme)
-                :size  tiny-circle-size
-                :style (styles/circle false)}]
-       [circle {:color (:interactive-02 @colors/theme)
-                :size  big-circle-size
-                :style (styles/circle false)
-                :icon :main-icons/checkmark
-                :icon-size {:width 16 :height 16}}]
-       [circle {:color (:interactive-02 @colors/theme)
-                :size  tiny-circle-size
-                :style (styles/circle true)}]
-       [circle {:color (:interactive-02 @colors/theme)
-                :size  tiny-circle-size
-                :style (styles/circle true)}]
-       [circle {:color (:interactive-02 @colors/theme)
-                :size  tiny-circle-size
-                :style (styles/circle true)}]
-       [chat-icon/custom-icon-view-list (:name dapps-account) (:color dapps-account)]]
-      [react/view styles/sheet-body-container
-       [react/view {:style styles/proposal-title-container}
-        [quo/text {:weight :bold
-                   :size   :large}
-         (str name " ")]
-        [quo/text {:weight :regular
-                   :size   :large
-                   :color  :secondary
-                   :style  styles/proposal-title}
-         (i18n/label :t/wallet-connect-proposal-title)]]
-       [toolbar-selection {:icon :main-icons/billfold
-                           :background-color (:color dapps-account)
-                           :text (:name dapps-account)
-                           :multiaccounts accounts
-                           :on-press #(re-frame/dispatch [:bottom-sheet/show-sheet
-                                                          {:content (accounts/accounts-list visible-accounts dapps-account)}])}]
-       [quo/text {:align :center
-                  :color :secondary
-                  :style styles/proposal-description}
-        (i18n/label :t/wallet-connect-proposal-description {:name name})]
-       [react/view styles/proposal-buttons-container
-        [react/view styles/proposal-button-left
-         [quo/button
-          {:on-press #(re-frame/dispatch [:wallet-connect/reject-proposal])}
-          (i18n/label :t/cancel)]]
-        [react/view styles/proposal-button-right
-         [quo/button
-          {:theme     :accent
-           :on-press  #(re-frame/dispatch [:wallet-connect/approve-proposal dapps-account])}
-          (i18n/label :t/connect)]]]]]]))
+        accounts  @(re-frame/subscribe [:multiaccount/visible-accounts])
+        selected-account (reagent/atom dapps-account)]
+    {:component-did-mount
+     (fn [_]
+       (reset! selected-account dapps-account))}
+    (fn []
+      [react/view {:style styles/acc-sheet}
+       [react/view styles/proposal-sheet-container
+        [react/view styles/proposal-sheet-header
+         [quo/text {:weight :bold
+                    :size   :large}
+          "Connection Request"]]
+        [react/image {:style styles/dapp-logo
+                      :source {:uri icon-uri}}]
+        [react/view styles/sheet-body-container
+         [react/view {:style styles/proposal-title-container}
+          [quo/text {:weight :bold
+                     :size   :large}
+           (str name " ")]
+          [quo/text {:weight :regular
+                     :size   :large
+                     :style  styles/proposal-title}
+           (i18n/label :t/wallet-connect-proposal-title)]]]
+        [account-picker visible-accounts selected-account]
+        [react/view styles/footer
+         [react/view styles/proposal-buttons-container
+          [react/view styles/proposal-button-left
+           [quo/button
+            {:type :secondary
+             :on-press #(re-frame/dispatch [:wallet-connect/reject-proposal])}
+            (i18n/label :t/reject)]]
+          [react/view styles/proposal-button-right
+           [quo/button
+            {:theme     :accent
+             :on-press  #(re-frame/dispatch [:wallet-connect/approve-proposal @selected-account])}
+            (i18n/label :t/connect)]]]]]])))
 
 (def success-sheet
   {:content success-sheet-view})

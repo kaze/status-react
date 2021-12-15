@@ -9,17 +9,16 @@
 
 (defn toolbar-container [background-color]
   {:height 36
-   :min-width 189
    :border-radius 18
    :background-color background-color
    :align-items :center
    :flex-direction :row
-   :padding-left 12
-   :padding-right 8})
+   :padding-left 13
+   :padding-right 6})
 
 (def toolbar-text
-  {:margin-left 8
-   :flex-grow 1})
+  {:flex-grow 1
+   :margin-right 3})
 
 (def success-sheet-container
   {:flex 1
@@ -36,11 +35,17 @@
    :margin-bottom 16})
 
 (def dapp-logo
-  {:width            40
-   :height           40
-   :background-color (:interactive-02 @colors/theme)
+  {:width            120
+   :height           120
    :resize-mode      :cover
-   :border-radius    20})
+   :margin-top 31
+   :border-radius    16
+   :border-width 2
+   :border-color (:interactive-02 @colors/theme)
+   :padding 5})
+
+(def icon-container
+  {})
 
 (defn circle [default-spacing?]
   {:margin-right (if default-spacing? 4 8)})
@@ -64,38 +69,48 @@
   {:background-color :white
    :width "100%"
    :align-items :center
-   :padding-top 30
-   :padding-bottom 80
+   :padding-top 0
+   :padding-bottom 50
    :border-top-right-radius 16
    :border-top-left-radius  16})
 
 (def proposal-sheet-header
   {:flex-direction :row
    :align-items :center
-   :margin-top 10
-   :margin-bottom 16})
+   :justify-content :center
+   :height 56
+   :width "100%"
+   :border-color colors/gray-lighter
+   :border-bottom-width 1})
 
 (def proposal-title-container
-  {:flex-direction :row})
+  {:align-items :center
+   :margin-top 21})
 
 (def proposal-title
-  {:margin-bottom 16})
+  {})
 
 (def proposal-description
   {:margin-vertical 16})
 
+(def footer
+  {:width "100%"
+   :height 76
+   :border-color colors/gray-lighter
+   :border-top-width 1})
+
 (def proposal-buttons-container
-  {:padding-horizontal 16
-   :width "100%"
-   :align-items :stretch
-   :justify-content :space-between
+  {:flex 1
    :flex-direction :row
-   :margin-top 6})
+   :justify-content :space-between
+   :align-items :center
+   :padding-horizontal 16})
+
+(def wallet-picker-container
+  {:height 80})
 
 (def proposal-button-left
-  {:flex 1
-   :margin-right 4})
+  {})
 
 (def proposal-button-right
-  {:flex 1
-   :margin-left 4})
+  {})

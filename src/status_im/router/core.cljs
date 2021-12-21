@@ -19,6 +19,8 @@
 
 (def uri-schemes ["status-im://" "status-im:"])
 
+(def wallet-connect-scheme "wc:")
+
 (def web-prefixes ["https://" "http://" "https://www." "http://wwww."])
 
 (def web2-domain "join.status.im")

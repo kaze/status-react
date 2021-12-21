@@ -58,7 +58,8 @@
 
 (defn subscribe-to-events [wallet-connect-client]
   (.on wallet-connect-client (wallet-connect/session-request-event) #(re-frame/dispatch [:wallet-connect/request %]))
-  (.on wallet-connect-client (wallet-connect/session-created-event) #(re-frame/dispatch [:bottom-sheet/show-sheet :wallet-connect-session-connected %]))
+  (.on wallet-connect-client (wallet-connect/session-created-event) #(re-frame/dispatch [:bottom-sheet/show-sheet {:view :wallet-connect-session-connected
+                                                                                                                   :options %}]))
   (.on wallet-connect-client (wallet-connect/session-deleted-event) #(re-frame/dispatch [:wallet-connect/deleted %]))
   (.on wallet-connect-client (wallet-connect/session-proposal-event) #(re-frame/dispatch [:wallet-connect/proposal %])))
 

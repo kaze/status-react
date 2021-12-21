@@ -10,10 +10,11 @@
             [quo.core :as quo]))
 
 (defn bottom-sheet []
-  (let [{:keys [show? view]} @(re-frame/subscribe [:bottom-sheet])
+  (let [{:keys [show? view options]} @(re-frame/subscribe [:bottom-sheet])
         {:keys [content]
          :as   opts}
         (cond-> {:visible?  show?
+                 :options options
                  :on-cancel #(re-frame/dispatch [:bottom-sheet/hide])}
 
           (map? view)
@@ -47,4 +48,4 @@
           (merge wallet-connect.views/success-sheet))]
     [quo/bottom-sheet opts
      (when content
-       [content])]))
+       [content (when options options)])]))

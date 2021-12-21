@@ -644,9 +644,11 @@
  :bottom-sheet
  :<- [:bottom-sheet/show?]
  :<- [:bottom-sheet/view]
- (fn [[show? view]]
+ :<- [:bottom-sheet/options]
+ (fn [[show? view options]]
    {:show? show?
-    :view  view}))
+    :view  view
+    :options options}))
 
 (re-frame/reg-sub
  :is-contact-selected?

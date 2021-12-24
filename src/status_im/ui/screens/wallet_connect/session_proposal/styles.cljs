@@ -93,6 +93,12 @@
 (def proposal-description
   {:margin-vertical 16})
 
+(def message-title
+  {:margin-top 10
+   :margin-bottom 14
+   :margin-horizontal 72.5
+   :text-align :center})
+
 (def footer
   {:width "100%"
    :height 76
@@ -114,3 +120,10 @@
 
 (def proposal-button-right
   {})
+
+(def success-button-container
+  {:flex 1
+   :flex-direction :row
+   :justify-content :flex-end
+   :align-items :center
+   :padding-horizontal 16})

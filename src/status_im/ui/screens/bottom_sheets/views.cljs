@@ -10,11 +10,10 @@
             [quo.core :as quo]))
 
 (defn bottom-sheet []
-  (let [{:keys [show? view options]} @(re-frame/subscribe [:bottom-sheet])
+  (let [{:keys [show? view options] :as asd} @(re-frame/subscribe [:bottom-sheet])
         {:keys [content]
          :as   opts}
         (cond-> {:visible?  show?
-                 :options options
                  :on-cancel #(re-frame/dispatch [:bottom-sheet/hide])}
 
           (map? view)
@@ -41,11 +40,9 @@
           (= view :migrate-account-password)
           (merge key-storage/migrate-account-password)
 
-          (= view :wallet-connect-session-proposal)
-          (merge wallet-connect.views/bottom-sheet)
-
           (= view :wallet-connect-session-connected)
           (merge wallet-connect.views/success-sheet))]
+    (println asd "CCCCOFDSFSDFSD")
     [quo/bottom-sheet opts
      (when content
        [content (when options options)])]))

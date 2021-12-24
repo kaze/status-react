@@ -110,4 +110,4 @@
 
 (views/defview animated-bottom-panel [val view on-close]
   (views/letsubs [{window-height :height} [:dimensions/window]]
-    [bottom-panel (when val (select-keys val [:from :contact :amount :token :approve? :message :cancel? :hash :name :url :icons :description])) view window-height on-close]))
+    [bottom-panel (when val (select-keys val [:from :contact :amount :token :approve? :message :cancel? :hash :name :url :icons :description :topic :relay :self :peer :permissions :state])) view window-height on-close]))

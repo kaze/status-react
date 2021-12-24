@@ -34,10 +34,13 @@
     {:db (assoc db :wallet-connect/proposal proposal :wallet-connect/proposal-metadata metadata)
      :show-wallet-connect-sheet nil}))
 
-(fx/defn created-handler
+(fx/defn session-connected
   {:events [:wallet-connect/created]}
-  [{:keys [db] :as cofx} request-event]
-  (log/debug "[wallet connect] session created - " (js->clj request-event)))
+  [{:keys [db]} session]
+  (let [session (js->clj session :keywordize-keys true)]
+    (log/debug "[wallet connect] session created - " session)
+    {:show-wallet-connect-success-sheet nil
+     :db (assoc db :wallet-connect/session-connected session)}))
 
 (fx/defn deleted-handler
   {:events [:wallet-connect/deleted]}
@@ -58,8 +61,7 @@
 
 (defn subscribe-to-events [wallet-connect-client]
   (.on wallet-connect-client (wallet-connect/session-request-event) #(re-frame/dispatch [:wallet-connect/request %]))
-  (.on wallet-connect-client (wallet-connect/session-created-event) #(re-frame/dispatch [:bottom-sheet/show-sheet {:view :wallet-connect-session-connected
-                                                                                                                   :options %}]))
+  (.on wallet-connect-client (wallet-connect/session-created-event) #(re-frame/dispatch [:wallet-connect/created %]))
   (.on wallet-connect-client (wallet-connect/session-deleted-event) #(re-frame/dispatch [:wallet-connect/deleted %]))
   (.on wallet-connect-client (wallet-connect/session-proposal-event) #(re-frame/dispatch [:wallet-connect/proposal %])))
 
@@ -99,6 +101,18 @@
         (.then #(log/debug "[wallet-connect] session proposal rejected"))
         (.catch #(log/error "[wallet-connect] " %)))
     {:hide-wallet-connect-sheet nil}))
+
+(fx/defn change-session-account
+  {:events [:wallet-connect/change-session-account]}
+  [{:keys [db]} topic account]
+  (let [client (get db :wallet-connect/client)
+        proposal (get db :wallet-connect/proposal)]
+    (-> ^js client
+        (.update (clj->js {:topic topic
+                           :account account}))
+        (.then #(log/debug "[wallet-connect] session topic " topic " changed to account " account))
+        (.catch #(log/error "[wallet-connect] " %)))
+    {}))
 
 (fx/defn disconnect-session
   {:events [:wallet-connect/disconnect-session]}

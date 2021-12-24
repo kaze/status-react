@@ -271,6 +271,7 @@
 ;; wallet connect
 (reg-root-key-sub :wallet-connect/proposal-metadata :wallet-connect/proposal-metadata)
 (reg-root-key-sub :wallet-connect/enabled? :wallet-connect/enabled?)
+(reg-root-key-sub :wallet-connect/session-connected :wallet-connect/session-connected)
 
 (re-frame/reg-sub
  :communities
@@ -647,7 +648,7 @@
  :<- [:bottom-sheet/options]
  (fn [[show? view options]]
    {:show? show?
-    :view  view
+    :view view
     :options options}))
 
 (re-frame/reg-sub

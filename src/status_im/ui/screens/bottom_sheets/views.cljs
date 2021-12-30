@@ -6,11 +6,10 @@
             [status-im.ui.screens.multiaccounts.key-storage.views :as key-storage]
             [status-im.ui.screens.about-app.views :as about-app]
             [status-im.ui.screens.multiaccounts.recover.views :as recover.views]
-            [status-im.ui.screens.wallet-connect.session-proposal.views :as wallet-connect.views]
             [quo.core :as quo]))
 
 (defn bottom-sheet []
-  (let [{:keys [show? view options] :as asd} @(re-frame/subscribe [:bottom-sheet])
+  (let [{:keys [show? view options]} @(re-frame/subscribe [:bottom-sheet])
         {:keys [content]
          :as   opts}
         (cond-> {:visible?  show?

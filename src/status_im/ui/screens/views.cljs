@@ -149,3 +149,13 @@
       [wallet-connect/wallet-connect-success-sheet-view]
       (when js/goog.DEBUG
         [reloader/reload-view])])))
+
+(def wallet-connect-app-management-comp
+  (reagent/reactify-component
+   (fn []
+     ^{:key (str "wallet-connect-app-management-sheet" @reloader/cnt)}
+     [react/safe-area-provider
+      [inactive]
+      [wallet-connect/wallet-connect-app-management-sheet-view]
+      (when js/goog.DEBUG
+        [reloader/reload-view])])))

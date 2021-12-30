@@ -22,5 +22,7 @@
 
 (defn session-proposal-event [] (.-proposal (.-session CLIENT_EVENTS)))
 
+(defn session-updated-event [] (.-updated (.-session CLIENT_EVENTS)))
+
 (defn url? [url]
   (string/starts-with? url "wc:"))

@@ -96,3 +96,8 @@
   [_]
   {:hide-wallet-connect-success-sheet nil})
 
+(fx/defn hide-wallet-connect-app-management-sheet
+  {:events [:hide-wallet-connect-app-management-sheet]}
+  [{:keys [db]}]
+  {:db (assoc db :wallet-connect/showing-app-management-sheet? false)
+   :hide-wallet-connect-app-management-sheet nil})

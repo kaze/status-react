@@ -352,10 +352,18 @@
                       (fn [] (gestureHandlerRootHOC views/wallet-connect-success-comp))
                       (fn [] views/wallet-connect-success-comp)))
 
+(defonce wallet-connect-app-management-sheet-reg
+  (.registerComponent Navigation
+                      "wallet-connect-app-management-sheet"
+                      (fn [] (gestureHandlerRootHOC views/wallet-connect-app-management-comp))
+                      (fn [] views/wallet-connect-app-management-comp)))
+
 (re-frame/reg-fx :show-wallet-connect-sheet (fn [] (show-overlay "wallet-connect-sheet")))
 (re-frame/reg-fx :hide-wallet-connect-sheet (fn [] (dissmiss-overlay "wallet-connect-sheet")))
 (re-frame/reg-fx :show-wallet-connect-success-sheet (fn [] (show-overlay "wallet-connect-success-sheet")))
 (re-frame/reg-fx :hide-wallet-connect-success-sheet (fn [] (dissmiss-overlay "wallet-connect-success-sheet")))
+(re-frame/reg-fx :show-wallet-connect-app-management-sheet (fn [] (show-overlay "wallet-connect-app-management-sheet")))
+(re-frame/reg-fx :hide-wallet-connect-app-management-sheet (fn [] (dissmiss-overlay "wallet-connect-app-management-sheet")))
 
 ;; SIGNING
 

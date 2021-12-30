@@ -272,6 +272,8 @@
 (reg-root-key-sub :wallet-connect/proposal-metadata :wallet-connect/proposal-metadata)
 (reg-root-key-sub :wallet-connect/enabled? :wallet-connect/enabled?)
 (reg-root-key-sub :wallet-connect/session-connected :wallet-connect/session-connected)
+(reg-root-key-sub :wallet-connect/showing-app-management-sheet? :wallet-connect/showing-app-management-sheet?)
+(reg-root-key-sub :wallet-connect/sessions :wallet-connect/sessions)
 
 (re-frame/reg-sub
  :communities

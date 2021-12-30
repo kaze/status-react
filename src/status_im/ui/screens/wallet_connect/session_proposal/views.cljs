@@ -50,11 +50,13 @@
       :width  chevron-icon-container-width
       :height chevron-icon-container-height}]]])
 
-;; (def selected-account (reagent/atom nil))
+(def show-account-selector? (reagent/atom false))
 
-(defn render-account [{:keys [address name color] :as account} _ _ {:keys [selected-account]}]
+(defn render-account [{:keys [address name color] :as account} _ _ {:keys [selected-account on-select]}]
   (let [account-selected? (= (:address @selected-account) address)]
-    [react/touchable-without-feedback {:on-press #(reset! selected-account (merge {} account))}
+    [react/touchable-without-feedback {:on-press #(do
+                                                    (reset! selected-account (merge {} account))
+                                                    (when on-select (on-select)))}
      [react/view {:style {:height 34
                           :background-color color
                           :border-radius 17
@@ -66,30 +68,33 @@
                  :weight (if account-selected? :medium :regular)}
        name]]]))
 
-(defn account-picker [accounts selected-account {:keys [on-press]}]
-  (println on-press )
+(defn account-selector [accounts selected-account on-select]
+  [react/view {:style {:height 80
+                       :width "100%"
+                       :justify-content :center
+                       :padding-horizontal 16
+                       :margin-top 40}}
+   [react/view
+    [quo/text {:size :small} "Select account"]
+    [list/flat-list {:data        accounts
+                     :key-fn      :address
+                     :render-fn   render-account
+                     :render-data {:selected-account selected-account
+                                   :on-select on-select}
+                     :horizontal  true
+                     :shows-horizontal-scroll-indicator false
+                     :extraData @selected-account
+                     :style {:height 40
+                             :width "100%"
+                             :margin-top 10}}]]])
+
+(defn account-picker [accounts selected-account {:keys [on-press on-select]}]
   (if (> (count accounts) 1)
-    [react/view {:style {:height 80
-                         :width "100%"
-                         :justify-content :center
-                         :padding-horizontal 16
-                         :margin-top 40}}
-     [react/view
-      [quo/text {:size :small} "Select account"]
-      [list/flat-list {:data        accounts
-                       :key-fn      :address
-                       :render-fn   render-account
-                       :render-data {:selected-account selected-account}
-                       :horizontal  true
-                       :shows-horizontal-scroll-indicator false
-                       :extraData @selected-account
-                       :style {:height 40
-                               :width "100%"
-                               :margin-top 10}}]]]
+    [account-selector accounts selected-account on-select]
     [react/touchable-opacity {:style {:width "100%"
                                       :align-items :center
                                       :padding-top 8}}
-     [toolbar-selection {:text  (:name @selected-account)
+     [toolbar-selection {:text (:name @selected-account)
                          :background-color (:color @selected-account)
                          :on-press on-press}]]))
 
@@ -97,10 +102,13 @@
 
 (def big-circle-size 24)
 
-(defview success-sheet-view [{:keys [peer state topic]}]
+(defview success-sheet-view [{:keys [topic]}]
   (letsubs [visible-accounts @(re-frame/subscribe [:visible-accounts-without-watch-only])
-            dapps-account [:dapps-account]]
-           (let [{:keys [accounts]} state
+            dapps-account [:dapps-account]
+            showing-app-management-sheet? [:wallet-connect/showing-app-management-sheet?]
+            sessions [:wallet-connect/sessions]]
+           (let [{:keys [peer state]} (first (filter #(= (:topic %) topic) sessions))
+                 {:keys [accounts]} state
                  {:keys [metadata]} peer
                  {:keys [name icons]} metadata
                  icon-uri (when (and icons (> (count icons) 0)) (first icons))
@@ -127,7 +135,9 @@
                [account-picker
                 (vector dapps-account)
                 selected-account
-                {:on-press #(println "blur view here")}]
+                {:on-press #(do
+                              (re-frame/dispatch [:wallet-connect/manage-app])
+                              (reset! show-account-selector? true))}]
                [quo/text {:weight :regular
                           :color :secondary
                           :style  styles/message-title}
@@ -137,11 +147,54 @@
                  [react/view styles/proposal-button-right
                   [quo/button
                    {:theme     :accent
-                    :on-press  #(re-frame/dispatch [:hide-wallet-connect-success-sheet])}
-                   "Close"]]]]]])))
+                    :on-press  #(do
+                                  (reset! show-account-selector? false)
+                                  (re-frame/dispatch [:hide-wallet-connect-success-sheet]))}
+                   "Close"]]]]]
+              (when (or showing-app-management-sheet? false)
+                [react/blur-view {:style {:position :absolute
+                                          :top 80
+                                          :left 0
+                                          :right 0
+                                          :bottom 0
+                                          :background-color "rgba(255, 255, 255, 0.3)"}
+                                  :blurAmount 2
+                                  :blurType :light}
+                 [react/touchable-opacity {:style {:position :absolute
+                                                   :top 0
+                                                   :left 0
+                                                   :right 0
+                                                   :bottom 0
+                                                   :border-radius 16}
+                                           :on-press #(do
+                                                        (reset! show-account-selector? false))}]])])))
 
-(def success-sheet
-  {:content success-sheet-view})
+(defview app-management-sheet-view [{:keys [topic]}]
+  (letsubs []
+           (let [name "APP MANAGEMENT"
+                 visible-accounts @(re-frame/subscribe [:visible-accounts-without-watch-only])
+                 dapps-account @(re-frame/subscribe [:dapps-account])
+                 selected-account (reagent/atom dapps-account)]
+             [react/view {:style (merge styles/acc-sheet {:background-color "rgba(0,0,0,0)"})}
+              [react/linear-gradient {:colors ["rgba(0,0,0,0)" "rgba(0,0,0,0.3)"]
+                                      :start {:x 0 :y 0} :end {:x 0 :y 1}
+                                      :style {:width "100%"
+                                              :height 50
+                                              :opacity 0.3}}]
+              [react/view styles/proposal-sheet-container
+               [react/view styles/sheet-body-container
+                [react/view {:style styles/proposal-title-container}
+                 [quo/text {:weight :bold
+                            :size   :large}
+                  name]
+                 [quo/text {:weight :regular
+                            :size   :large
+                            :style  styles/proposal-title}
+                  "Connected"]]]
+               [account-selector
+                visible-accounts
+                selected-account
+                #(re-frame/dispatch [:wallet-connect/change-session-account topic @selected-account])]]])))
 
 (defview session-proposal-sheet [{:keys [name icons]}]
   (let [visible-accounts @(re-frame/subscribe [:visible-accounts-without-watch-only])
@@ -192,3 +245,11 @@
             session
             success-sheet-view
             #(re-frame/dispatch [:hide-wallet-connect-success-sheet])]))
+
+(defview wallet-connect-app-management-sheet-view []
+  (letsubs [session [:wallet-connect/session-connected]]
+           [bottom-panel/animated-bottom-panel
+            session
+            app-management-sheet-view
+            #(re-frame/dispatch [:hide-wallet-connect-app-management-sheet])
+            false]))

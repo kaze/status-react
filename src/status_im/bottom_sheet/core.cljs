@@ -12,7 +12,6 @@
 (fx/defn show-bottom-sheet-event
   {:events [:bottom-sheet/show-sheet]}
   [cofx view options]
-         (println options "DSDSDSDSDSDSDSDSDSDS")
   (show-bottom-sheet
    cofx
    {:view    view

@@ -38,11 +38,7 @@
           (merge recover.views/bottom-sheet)
 
           (= view :migrate-account-password)
-          (merge key-storage/migrate-account-password)
-
-          (= view :wallet-connect-session-connected)
-          (merge wallet-connect.views/success-sheet))]
-    (println asd "CCCCOFDSFSDFSD")
+          (merge key-storage/migrate-account-password))]
     [quo/bottom-sheet opts
      (when content
        [content (when options options)])]))

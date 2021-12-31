@@ -13,26 +13,6 @@
             [reagent.core :as reagent]
             [clojure.string :as string]))
 
-(defn circle [{:keys [color size style icon icon-size icon-color]}]
-  [react/view
-   {:style (merge
-            style
-            {:width            size
-             :height           size
-             :background-color color
-             :border-radius    (/ size 2)
-             :align-items      :center
-             :justify-content  :center})}
-   (when icon
-     [icons/icon icon
-      (merge
-       {:color    (if icon-color icon-color colors/blue)}
-       icon-size)])])
-
-(def billfold-icon-container-width 18)
-
-(def billfold-icon-container-height 17.8)
-
 (def chevron-icon-container-width 24)
 
 (def chevron-icon-container-height 24)
@@ -57,25 +37,15 @@
     [react/touchable-without-feedback {:on-press #(do
                                                     (reset! selected-account (merge {} account))
                                                     (when on-select (on-select)))}
-     [react/view {:style {:height 34
-                          :background-color color
-                          :border-radius 17
-                          :padding-horizontal 10
-                          :justify-content :center
-                          :margin-right 4
-                          :opacity (if account-selected? 1 0.5)}}
+     [react/view {:style (styles/account-container color account-selected?)}
       [quo/text {:color :inverse
                  :weight (if account-selected? :medium :regular)}
        name]]]))
 
 (defn account-selector [accounts selected-account on-select]
-  [react/view {:style {:height 80
-                       :width "100%"
-                       :justify-content :center
-                       :padding-horizontal 16
-                       :margin-top 40}}
+  [react/view {:style styles/account-selector-container}
    [react/view
-    [quo/text {:size :small} "Select account"]
+    [quo/text {:size :small} (i18n/label :t/select-account)]
     [list/flat-list {:data        accounts
                      :key-fn      :address
                      :render-fn   render-account
@@ -84,23 +54,15 @@
                      :horizontal  true
                      :shows-horizontal-scroll-indicator false
                      :extraData @selected-account
-                     :style {:height 40
-                             :width "100%"
-                             :margin-top 10}}]]])
+                     :style styles/account-selector-list}]]])
 
 (defn account-picker [accounts selected-account {:keys [on-press on-select]}]
   (if (> (count accounts) 1)
     [account-selector accounts selected-account on-select]
-    [react/touchable-opacity {:style {:width "100%"
-                                      :align-items :center
-                                      :padding-top 8}}
+    [react/touchable-opacity {:style styles/single-account-container}
      [toolbar-selection {:text (:name @selected-account)
                          :background-color (:color @selected-account)
                          :on-press on-press}]]))
-
-(def tiny-circle-size 4)
-
-(def big-circle-size 24)
 
 (defview success-sheet-view [{:keys [topic]}]
   (letsubs [visible-accounts @(re-frame/subscribe [:visible-accounts-without-watch-only])
@@ -120,7 +82,7 @@
         [react/view styles/proposal-sheet-header
          [quo/text {:weight :bold
                     :size   :large}
-          "Connection Request"]]
+          (i18n/label :t/connection-request)]]
         [react/image {:style styles/dapp-logo
                       :source {:uri icon-uri}}]
         [react/view styles/sheet-body-container
@@ -131,7 +93,7 @@
           [quo/text {:weight :regular
                      :size   :large
                      :style  styles/proposal-title}
-           "Connected"]]]
+           (i18n/label :t/connected)]]]
         [account-picker
          (vector dapps-account)
          selected-account
@@ -141,7 +103,7 @@
         [quo/text {:weight :regular
                    :color :secondary
                    :style  styles/message-title}
-         "Manage connections from within Application Connections"]
+         (i18n/label :t/manage-connections)]
         [react/view styles/footer
          [react/view styles/success-button-container
           [react/view styles/proposal-button-right
@@ -150,38 +112,37 @@
              :on-press  #(do
                            (reset! show-account-selector? false)
                            (re-frame/dispatch [:hide-wallet-connect-success-sheet]))}
-            "Close"]]]]]
+            (i18n/label :t/close)]]]]]
        (when (or showing-app-management-sheet? false)
-         [react/blur-view {:style {:position :absolute
-                                   :top 80
-                                   :left 0
-                                   :right 0
-                                   :bottom 0
-                                   :background-color "rgba(255, 255, 255, 0.3)"}
+         [react/blur-view {:style styles/blur-view
                            :blurAmount 2
-                           :blurType :light}
-          [react/touchable-opacity {:style {:position :absolute
-                                            :top 0
-                                            :left 0
-                                            :right 0
-                                            :bottom 0
-                                            :border-radius 16}
-                                    :on-press #(do
-                                                 (reset! show-account-selector? false))}]])])))
+                           :blurType :light}])])))
 
 (defview app-management-sheet-view [{:keys [topic]}]
-  (letsubs []
-    (let [name "APP MANAGEMENT"
-          visible-accounts @(re-frame/subscribe [:visible-accounts-without-watch-only])
-          dapps-account @(re-frame/subscribe [:dapps-account])
-          selected-account (reagent/atom dapps-account)]
+  (letsubs [sessions [:wallet-connect/sessions]
+            visible-accounts [:visible-accounts-without-watch-only]]
+    (let [{:keys [peer state]} (first (filter #(= (:topic %) topic) sessions))
+          {:keys [accounts]} state
+          {:keys [metadata]} peer
+          {:keys [name icons url]} metadata
+          icon-uri (when (and icons (> (count icons) 0)) (first icons))
+          account-address (last (string/split (first accounts) #":"))
+          selected-account (reagent/atom (first (filter #(= (:address %) account-address) visible-accounts)))]
       [react/view {:style (merge styles/acc-sheet {:background-color "rgba(0,0,0,0)"})}
        [react/linear-gradient {:colors ["rgba(0,0,0,0)" "rgba(0,0,0,0.3)"]
                                :start {:x 0 :y 0} :end {:x 0 :y 1}
-                               :style {:width "100%"
-                                       :height 50
-                                       :opacity 0.3}}]
+                               :style styles/shadow}]
        [react/view styles/proposal-sheet-container
+        [react/view {:style styles/management-sheet-header}
+         [react/image {:style styles/management-icon
+                       :source {:uri icon-uri}}]
+         [react/view {:style {:flex-direction :row}}
+          [quo/text {:weight :medium} name]
+          [quo/text url]]
+         [quo/button
+          {:type :secondary
+           :on-press #(re-frame/dispatch [:wallet-connect/disconnect topic])}
+          (i18n/label :t/disconnect)]]
         [react/view styles/sheet-body-container
          [react/view {:style styles/proposal-title-container}
           [quo/text {:weight :bold
@@ -190,7 +151,7 @@
           [quo/text {:weight :regular
                      :size   :large
                      :style  styles/proposal-title}
-           "Connected"]]]
+           (i18n/label :t/connected)]]]
         [account-selector
          visible-accounts
          selected-account
@@ -206,7 +167,7 @@
       [react/view styles/proposal-sheet-header
        [quo/text {:weight :bold
                   :size   :large}
-        "Connection Request"]]
+        (i18n/label :t/connection-request)]]
       [react/image {:style styles/dapp-logo
                     :source {:uri icon-uri}}]
       [react/view styles/sheet-body-container
@@ -247,7 +208,7 @@
      #(re-frame/dispatch [:hide-wallet-connect-success-sheet])]))
 
 (defview wallet-connect-app-management-sheet-view []
-  (letsubs [session [:wallet-connect/session-connected]]
+  (letsubs [session [:wallet-connect/session-managed]]
     [bottom-panel/animated-bottom-panel
      session
      app-management-sheet-view

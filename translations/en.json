@@ -1744,5 +1744,7 @@
     "wallet-connect-2.0": "Wallet Connect 2.0",
     "reject": "Reject",
     "manage-connections": "Manage connections from within Application Connections",
-    "wallet-manage-app-connections": "Manage app connections"
+    "wallet-manage-app-connections": "Manage app connections",
+    "connection-request": "Connection Request",
+    "disconnect": "Disconnect"
 }

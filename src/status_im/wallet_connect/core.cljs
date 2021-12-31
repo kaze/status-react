@@ -43,17 +43,12 @@
     {:show-wallet-connect-success-sheet nil
      :db (assoc db :wallet-connect/session-connected session :wallet-connect/sessions (js->clj (.-values (.-session client)) :keywordize-keys true))}))
 
-(fx/defn deleted-handler
-  {:events [:wallet-connect/deleted]}
-  [{:keys [db] :as cofx} request-event]
-  (log/debug "[wallet connect] session deleted - " (js->clj request-event)))
-
 (fx/defn manage-app
   {:events [:wallet-connect/manage-app]}
   [{:keys [db]} session]
   (let [session (js->clj session :keywordize-keys true)]
     (log/debug "[wallet connect] session created - " session)
-    {:db (assoc db :wallet-connect/showing-app-management-sheet? true)
+    {:db (assoc db :wallet-connect/session-managed session :wallet-connect/showing-app-management-sheet? true)
      :show-wallet-connect-app-management-sheet nil}))
 
 (fx/defn request-handler
@@ -76,7 +71,7 @@
 (defn subscribe-to-events [wallet-connect-client]
   (.on wallet-connect-client (wallet-connect/session-request-event) #(re-frame/dispatch [:wallet-connect/request %]))
   (.on wallet-connect-client (wallet-connect/session-created-event) #(re-frame/dispatch [:wallet-connect/created %]))
-  (.on wallet-connect-client (wallet-connect/session-deleted-event) #(re-frame/dispatch [:wallet-connect/deleted %]))
+  (.on wallet-connect-client (wallet-connect/session-deleted-event) #(re-frame/dispatch [:wallet-connect/update-sessions]))
   (.on wallet-connect-client (wallet-connect/session-updated-event) #(re-frame/dispatch [:wallet-connect/update-sessions]))
   (.on wallet-connect-client (wallet-connect/session-proposal-event) #(re-frame/dispatch [:wallet-connect/proposal %])))
 
@@ -136,14 +131,15 @@
      :hide-wallet-connect-app-management-sheet nil}))
 
 (fx/defn disconnect-session
-  {:events [:wallet-connect/disconnect-session]}
-  [{:keys [db]} topic reason]
+  {:events [:wallet-connect/disconnect]}
+  [{:keys [db]} topic]
   (let [client (get db :wallet-connect/client)]
     (-> ^js client
-        (.disconnect (clj->js {:topic topic :reason reason}))
+        (.disconnect (clj->js {:topic topic}))
         (.then #(log/debug "[wallet-connect] session disconnected - topic " topic))
         (.catch #(log/error "[wallet-connect] " %)))
-    {:dispatch [:bottom-sheet/hide]
+    {:hide-wallet-connect-app-management-sheet nil
+     :hide-wallet-connect-success-sheet nil
      :db (assoc db :wallet-connect/sessions (js->clj (.-values (.-session client)) :keywordize-keys true))}))
 
 (fx/defn pair-session

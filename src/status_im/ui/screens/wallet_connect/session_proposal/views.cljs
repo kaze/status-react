@@ -59,9 +59,9 @@
 
 (defn account-picker [accounts selected-account {:keys [on-press on-select]}]
   (if (> (count accounts) 1)
-    [react/view styles/account-selector-wrapper
+    [react/view {:style styles/account-selector-wrapper}
      [account-selector accounts selected-account on-select]]
-    [react/touchable-opacity styles/single-account-container
+    [react/touchable-opacity {:style styles/single-account-container}
      [toolbar-selection {:text (:name @selected-account)
                          :background-color (:color @selected-account)
                          :on-press on-press}]]))
@@ -85,7 +85,8 @@
          [quo/text {:weight :bold
                     :size   :large}
           (i18n/label :t/connection-request)]]
-        [react/image styles/dapp-logo {:source {:uri icon-uri}}]
+        [react/image {:style styles/dapp-logo
+                      :source {:uri icon-uri}}]
         [react/view styles/sheet-body-container
          [react/view styles/proposal-title-container
           [quo/text {:weight :bold
@@ -116,8 +117,9 @@
             (i18n/label :t/close)]]]]]
        (when managed-session
          (if platform/ios?
-           [react/blur-view styles/blur-view {:blurAmount 2
-                                              :blurType :light}]
+           [react/blur-view {:style styles/blur-view
+                             :blurAmount 2
+                             :blurType :light}]
            [react/view styles/blur-view]))])))
 
 (defview app-management-sheet-view [{:keys [topic]}]
@@ -136,7 +138,8 @@
                                :style styles/shadow}]
        [react/view styles/proposal-sheet-container
         [react/view styles/management-sheet-header
-         [react/image styles/management-icon {:source {:uri icon-uri}}]
+         [react/image {:style styles/management-icon
+                       :source {:uri icon-uri}}]
          [react/view styles/app-info-container
           [quo/text {:weight :medium} name]
           [quo/text {:color :secondary
@@ -163,7 +166,8 @@
        [quo/text {:weight :bold
                   :size   :large}
         (i18n/label :t/connection-request)]]
-      [react/image styles/dapp-logo {:source {:uri icon-uri}}]
+      [react/image {:style styles/dapp-logo
+                    :source {:uri icon-uri}}]
       [react/view styles/sheet-body-container
        [react/view styles/proposal-title-container
         [quo/text {:weight :bold

@@ -1251,9 +1251,10 @@
     eventemitter3 "^1.2.0"
     lodash "^4.17.15"
 
-"@react-native-community/blur@muhammedyasirmt/react-native-blur#16a0322487f310cdca4b1e76edf38200fae84e4f":
-  version "3.6.1"
-  resolved "https://codeload.github.com/muhammedyasirmt/react-native-blur/tar.gz/16a0322487f310cdca4b1e76edf38200fae84e4f"
+"@react-native-community/blur@^3.6.0":
+  version "3.6.0"
+  resolved "https://registry.yarnpkg.com/@react-native-community/blur/-/blur-3.6.0.tgz#31c9e0f2770519c9b5c4f99418f192246f0d4db8"
+  integrity sha512-GtDBhpX2pQcjl4VopOC8FktrVufrEfYRwVeMQ2WWckqKIv2BdwvlvWvj88L1WmEdBr9UNcm3rtgz+d+YXkmirA==
   dependencies:
     prop-types "^15.5.10"
 

@@ -11,7 +11,8 @@
             [status-im.ui.screens.wallet-connect.session-proposal.styles :as styles]
             [status-im.ui.components.list.views :as list]
             [reagent.core :as reagent]
-            [clojure.string :as string]))
+            [clojure.string :as string]
+            [quo.platform :as platform]))
 
 (def chevron-icon-container-width 24)
 
@@ -114,8 +115,10 @@
                            (re-frame/dispatch [:hide-wallet-connect-success-sheet]))}
             (i18n/label :t/close)]]]]]
        (when managed-session
-         [react/blur-view styles/blur-view {:blurAmount 2
-                                            :blurType :light}])])))
+         (if platform/ios?
+           [react/blur-view styles/blur-view {:blurAmount 2
+                                              :blurType :light}]
+           [react/view styles/blur-view]))])))
 
 (defview app-management-sheet-view [{:keys [topic]}]
   (letsubs [sessions [:wallet-connect/sessions]

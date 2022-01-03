@@ -47,7 +47,6 @@
   {:events [:wallet-connect/manage-app]}
   [{:keys [db]} session]
   (let [session (js->clj session :keywordize-keys true)]
-    (println "[wallet connect] session managed - " session)
     {:db (assoc db :wallet-connect/session-managed session :wallet-connect/showing-app-management-sheet? true)
      :show-wallet-connect-app-management-sheet nil}))
 

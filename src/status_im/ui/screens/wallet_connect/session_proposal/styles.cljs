@@ -141,8 +141,11 @@
   {:height 80
    :width "100%"
    :justify-content :center
-   :padding-horizontal 16
-   :margin-top 40})
+   :padding-horizontal 16})
+
+(def account-selector-wrapper
+  {:margin-top 40
+   :width "100%"})
 
 (def account-selector-list
   {:height 40
@@ -169,11 +172,18 @@
 
 (def management-sheet-header
   {:width "100%"
-   :height 44
-   :padding 16})
+   :flex-direction :row
+   :padding 16
+   :align-items :center
+   :border-bottom-width 1
+   :border-bottom-color colors/gray-lighter})
 
 (def management-icon
   {:width 40
    :height 40
    :border-radius 20
    :margin-right 16})
+
+(def app-info-container
+  {:flex-direction :column
+   :flex 1})

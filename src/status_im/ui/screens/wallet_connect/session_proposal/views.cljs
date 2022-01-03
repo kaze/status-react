@@ -19,7 +19,7 @@
 
 (defn toolbar-selection [{:keys [text background-color on-press]}]
   [react/touchable-opacity {:on-press on-press}
-   [react/view {:style (styles/toolbar-container background-color)}
+   [react/view (styles/toolbar-container background-color)
     [quo/text {:color :inverse
                :weight :medium
                :style styles/toolbar-text}
@@ -37,13 +37,13 @@
     [react/touchable-without-feedback {:on-press #(do
                                                     (reset! selected-account (merge {} account))
                                                     (when on-select (on-select)))}
-     [react/view {:style (styles/account-container color account-selected?)}
+     [react/view (styles/account-container color account-selected?)
       [quo/text {:color :inverse
                  :weight (if account-selected? :medium :regular)}
        name]]]))
 
 (defn account-selector [accounts selected-account on-select]
-  [react/view {:style styles/account-selector-container}
+  [react/view styles/account-selector-container
    [react/view
     [quo/text {:size :small} (i18n/label :t/select-account)]
     [list/flat-list {:data        accounts
@@ -58,8 +58,9 @@
 
 (defn account-picker [accounts selected-account {:keys [on-press on-select]}]
   (if (> (count accounts) 1)
-    [account-selector accounts selected-account on-select]
-    [react/touchable-opacity {:style styles/single-account-container}
+    [react/view styles/account-selector-wrapper
+     [account-selector accounts selected-account on-select]]
+    [react/touchable-opacity styles/single-account-container
      [toolbar-selection {:text (:name @selected-account)
                          :background-color (:color @selected-account)
                          :on-press on-press}]]))
@@ -67,9 +68,9 @@
 (defview success-sheet-view [{:keys [topic]}]
   (letsubs [visible-accounts @(re-frame/subscribe [:visible-accounts-without-watch-only])
             dapps-account [:dapps-account]
-            showing-app-management-sheet? [:wallet-connect/showing-app-management-sheet?]
-            sessions [:wallet-connect/sessions]]
-    (let [{:keys [peer state]} (first (filter #(= (:topic %) topic) sessions))
+            sessions [:wallet-connect/sessions]
+            managed-session [:wallet-connect/session-managed]]
+    (let [{:keys [peer state] :as session} (first (filter #(= (:topic %) topic) sessions))
           {:keys [accounts]} state
           {:keys [metadata]} peer
           {:keys [name icons]} metadata
@@ -77,16 +78,15 @@
           address (last (string/split (first accounts) #":"))
           account (first (filter #(= (:address %) address) visible-accounts))
           selected-account (reagent/atom account)]
-      [react/view {:style styles/acc-sheet}
+      [react/view styles/acc-sheet
        [react/view styles/proposal-sheet-container
         [react/view styles/proposal-sheet-header
          [quo/text {:weight :bold
                     :size   :large}
           (i18n/label :t/connection-request)]]
-        [react/image {:style styles/dapp-logo
-                      :source {:uri icon-uri}}]
+        [react/image styles/dapp-logo {:source {:uri icon-uri}}]
         [react/view styles/sheet-body-container
-         [react/view {:style styles/proposal-title-container}
+         [react/view styles/proposal-title-container
           [quo/text {:weight :bold
                      :size   :large}
            name]
@@ -98,7 +98,7 @@
          (vector dapps-account)
          selected-account
          {:on-press #(do
-                       (re-frame/dispatch [:wallet-connect/manage-app])
+                       (re-frame/dispatch [:wallet-connect/manage-app session])
                        (reset! show-account-selector? true))}]
         [quo/text {:weight :regular
                    :color :secondary
@@ -113,10 +113,9 @@
                            (reset! show-account-selector? false)
                            (re-frame/dispatch [:hide-wallet-connect-success-sheet]))}
             (i18n/label :t/close)]]]]]
-       (when (or showing-app-management-sheet? false)
-         [react/blur-view {:style styles/blur-view
-                           :blurAmount 2
-                           :blurType :light}])])))
+       (when managed-session
+         [react/blur-view styles/blur-view {:blurAmount 2
+                                            :blurType :light}])])))
 
 (defview app-management-sheet-view [{:keys [topic]}]
   (letsubs [sessions [:wallet-connect/sessions]
@@ -133,25 +132,18 @@
                                :start {:x 0 :y 0} :end {:x 0 :y 1}
                                :style styles/shadow}]
        [react/view styles/proposal-sheet-container
-        [react/view {:style styles/management-sheet-header}
-         [react/image {:style styles/management-icon
-                       :source {:uri icon-uri}}]
-         [react/view {:style {:flex-direction :row}}
+        [react/view styles/management-sheet-header
+         [react/image styles/management-icon {:source {:uri icon-uri}}]
+         [react/view styles/app-info-container
           [quo/text {:weight :medium} name]
-          [quo/text url]]
+          [quo/text {:color :secondary
+                     :number-of-lines 1
+                     :elipsize-mode :tail} url]]
          [quo/button
           {:type :secondary
+           :theme :secondary
            :on-press #(re-frame/dispatch [:wallet-connect/disconnect topic])}
           (i18n/label :t/disconnect)]]
-        [react/view styles/sheet-body-container
-         [react/view {:style styles/proposal-title-container}
-          [quo/text {:weight :bold
-                     :size   :large}
-           name]
-          [quo/text {:weight :regular
-                     :size   :large
-                     :style  styles/proposal-title}
-           (i18n/label :t/connected)]]]
         [account-selector
          visible-accounts
          selected-account
@@ -162,16 +154,15 @@
         dapps-account @(re-frame/subscribe [:dapps-account])
         icon-uri (when (and icons (> (count icons) 0)) (first icons))
         selected-account (reagent/atom dapps-account)]
-    [react/view {:style styles/acc-sheet}
+    [react/view styles/acc-sheet
      [react/view styles/proposal-sheet-container
       [react/view styles/proposal-sheet-header
        [quo/text {:weight :bold
                   :size   :large}
         (i18n/label :t/connection-request)]]
-      [react/image {:style styles/dapp-logo
-                    :source {:uri icon-uri}}]
+      [react/image styles/dapp-logo {:source {:uri icon-uri}}]
       [react/view styles/sheet-body-container
-       [react/view {:style styles/proposal-title-container}
+       [react/view styles/proposal-title-container
         [quo/text {:weight :bold
                    :size   :large}
          (str name " ")]

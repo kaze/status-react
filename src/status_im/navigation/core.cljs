@@ -159,7 +159,7 @@
    (.events Navigation)
    (fn [^js evn]
      (let [view-id (keyword (.-componentName evn))]
-       (when-not (#{"popover" "bottom-sheet" "signing-sheet" "visibility-status-popover" "wallet-connect-sheet" "wallet-connect-success-sheet"}
+       (when-not (#{"popover" "bottom-sheet" "signing-sheet" "visibility-status-popover" "wallet-connect-sheet" "wallet-connect-success-sheet" "wallet-connect-app-management-sheet"}
                   (.-componentName evn))
          (re-frame/dispatch [::view-disappeared view-id])
          (doseq [[_ {:keys [ref value]}] @quo.text-input/text-input-refs]

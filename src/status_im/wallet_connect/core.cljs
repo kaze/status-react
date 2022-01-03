@@ -47,7 +47,7 @@
   {:events [:wallet-connect/manage-app]}
   [{:keys [db]} session]
   (let [session (js->clj session :keywordize-keys true)]
-    (log/debug "[wallet connect] session created - " session)
+    (println "[wallet connect] session managed - " session)
     {:db (assoc db :wallet-connect/session-managed session :wallet-connect/showing-app-management-sheet? true)
      :show-wallet-connect-app-management-sheet nil}))
 
@@ -140,7 +140,9 @@
         (.catch #(log/error "[wallet-connect] " %)))
     {:hide-wallet-connect-app-management-sheet nil
      :hide-wallet-connect-success-sheet nil
-     :db (assoc db :wallet-connect/sessions (js->clj (.-values (.-session client)) :keywordize-keys true))}))
+     :db (-> db
+             (assoc :wallet-connect/sessions (js->clj (.-values (.-session client)) :keywordize-keys true))
+             (dissoc :wallet-connect/session-managed))}))
 
 (fx/defn pair-session
   {:events [:wallet-connect/pair]}
@@ -164,7 +166,9 @@
   {:events [:wallet-connect/update-sessions]}
   [{:keys [db] :as cofx}]
   (let [client (get db :wallet-connect/client)]
-    {:db (assoc db :wallet-connect/sessions (js->clj (.-values (.-session client)) :keywordize-keys true))}))
+    {:db (-> db
+             (assoc :wallet-connect/sessions (js->clj (.-values (.-session client)) :keywordize-keys true))
+             (dissoc :wallet-connect/session-managed))}))
 
 (fx/defn wallet-connect-complete-transaction
   {:events [:wallet-connect.dapp/transaction-on-result]}

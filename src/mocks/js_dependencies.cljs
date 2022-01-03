@@ -212,11 +212,15 @@
 (def react-native-notifications
   #js {:Notifications #js {}})
 
+(def react-native-blur
+  (clj->js {:BlurView {}}))
+
 (def wallet-connect-client #js {:default       #js {}
                                 :CLIENT_EVENTS #js {:session #js {:request nil
                                                                   :created nil
                                                                   :deleted nil
-                                                                  :proposal nil}}})
+                                                                  :proposal nil
+                                                                  :updated nil}}})
 
 ;; Update i18n_resources.cljs
 (defn mock [module]
@@ -249,6 +253,7 @@
     "react-native-linear-gradient" react-native-gradien
     "react-native-navigation" react-native-navigation
     "@react-native-community/push-notification-ios" push-notification-ios
+    "@react-native-community/blur" react-native-blur
     "react-native-camera-kit" react-native-camera-kit
     "rn-emoji-keyboard" rn-emoji-keyboard
     "react-native-notifications" react-native-notifications

@@ -42,7 +42,8 @@
             [status-im.ui.components.react :as react]
             [status-im.utils.platform :as platform]
             [status-im.ethereum.tokens :as tokens]
-            [status-im.utils.wallet-connect :as wallet-connect]))
+            [status-im.utils.wallet-connect :as wallet-connect]
+            [status-im.utils.wallet-connect-legacy :as wallet-connect-legacy]))
 
 (re-frame/reg-fx
  ::initialize-communities-enabled

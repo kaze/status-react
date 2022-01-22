@@ -18,7 +18,6 @@
         params (first (:params proposal))
         metadata (merge (:peerMeta params) {:wc-version 1})
         chain-id (:chainId params)]
-    (println proposal params metadata "LELLELELELELLELE")
     {:db (assoc db :wallet-connect-legacy/proposal-connector connector :wallet-connect-legacy/proposal-chain-id chain-id :wallet-connect/proposal-metadata metadata)
      :show-wallet-connect-sheet nil}))
 
@@ -33,7 +32,7 @@
         account (first (:accounts params))
         sessions (get db :wallet-connect-legacy/sessions)
         updated-sessions (if sessions (conj sessions session) [session])]
-    (println "[wallet connect 1.0] session created - " session)
+    (log/debug "[wallet connect 1.0] session created - " session)
     {:show-wallet-connect-success-sheet nil
      :db (assoc db :wallet-connect/session-connected session :wallet-connect-legacy/sessions updated-sessions)}))
 
@@ -108,16 +107,14 @@
 
 (fx/defn disconnect-session
   {:events [:wallet-connect-legacy/disconnect]}
-  [{:keys [db]} topic]
-  (let [client (get db :wallet-connect-legacy/client)]
-    (-> ^js client
-        (.disconnect (clj->js {:topic topic}))
-        (.then #(log/debug "[wallet-connect-legacy] session disconnected - topic " topic))
-        (.catch #(log/error "[wallet-connect-legacy] " %)))
+  [{:keys [db]} session]
+  (let [sessions (get db :wallet-connect-legacy/sessions)
+        connector (:connector session)]
+    (^js .killSession connector)
     {:hide-wallet-connect-app-management-sheet nil
      :hide-wallet-connect-success-sheet nil
      :db (-> db
-             (assoc :wallet-connect-legacy/sessions (js->clj (.-values (.-session client)) :keywordize-keys true))
+             (assoc :wallet-connect-legacy/sessions (remove session sessions))
              (dissoc :wallet-connect/session-managed))}))
 
 (fx/defn pair-session
@@ -130,9 +127,7 @@
         (^js .on connector "session_request" (fn [error payload]
                                                (re-frame/dispatch [:wallet-connect-legacy/proposal payload connector])))
         (^js .on connector "connect" (fn [error payload]
-                                       (println payload "SESSION CREATED!!!")
                                        (re-frame/dispatch [:wallet-connect-legacy/created payload])))))
-    (println connector "DLELLE")
     (merge
      {:dispatch [:navigate-back]}
      (when wallet-connect-enabled?

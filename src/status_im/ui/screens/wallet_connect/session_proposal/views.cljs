@@ -204,12 +204,10 @@
 
 (defview wallet-connect-proposal-sheet []
   (letsubs [proposal-metadata [:wallet-connect/proposal-metadata]]
-           (let [test "FDSFDSFDSFDS"]
-             (println test proposal-metadata)
-             [bottom-panel/animated-bottom-panel
-              proposal-metadata
-              session-proposal-sheet
-              #(re-frame/dispatch [:hide-wallet-connect-sheet])])))
+           [bottom-panel/animated-bottom-panel
+            proposal-metadata
+            session-proposal-sheet
+            #(re-frame/dispatch [:hide-wallet-connect-sheet])]))
 
 (defview wallet-connect-success-sheet-view []
   (letsubs [session [:wallet-connect/session-connected]]

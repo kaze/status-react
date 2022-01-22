@@ -79,7 +79,8 @@
             (navigation/pop-to-root-tab :wallet-stack)))
 
 (fx/defn handle-wallet-connect [cofx data]
-  {:dispatch [:wallet-connect/pair data]})
+  ;; {:dispatch [:wallet-connect/pair data]})
+  {:dispatch [:wallet-connect-legacy/pair data]})
 
 (fx/defn match-scan
   {:events [::match-scanned-value]}
@@ -101,5 +102,7 @@
   [{:keys [db]} uri]
   {::router/handle-uri {:chain (ethereum/chain-keyword db)
                         :chats (get db :chats)
-                        :uri   uri
+                        :uri   "wc:ba8a2414-39b1-49f0-a34b-86ec312197f7@1?bridge=https%3A%2F%2F2.bridge.walletconnect.org&key=f2fa224f9cf7b36f05337830c6cf180b5c308cac07102b5234715fc84e86cf7d"
                         :cb    #(re-frame/dispatch [::match-scanned-value %])}})
+
+;; wc:12be5a9f4bc2902696076c3a1946760318a7cb675f58e792eb3d86a83e8537ca@2?controller=false&publicKey=934d797cf4f93627efbd08aa3e196e89e21f47f99019231209caff88de03a13c&relay=%7B%22protocol%22%3A%22waku%22%7D

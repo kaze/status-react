@@ -37,7 +37,7 @@
 (fx/defn session-connected
   {:events [:wallet-connect/created]}
   [{:keys [db]} session]
-  (let [session (js->clj session :keywordize-keys true)
+  (let [session (merge (js->clj session :keywordize-keys true) {:wc-version 2})
         client (get db :wallet-connect/client)]
     (log/debug "[wallet connect] session created - " session)
     {:show-wallet-connect-success-sheet nil

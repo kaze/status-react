@@ -59,13 +59,13 @@
   [{:keys [db] :as cofx}]
   {:show-wallet-connect-sheet nil})
 
-(defn subscribe-to-events [wallet-connect-legacy-client]
+(defn subscribe-to-events [wallet-connect-legacy-client])
   ;; (.on wallet-connect-legacy-client (wallet-connect/session-request-event) #(re-frame/dispatch [:wallet-connect-legacy/request %]))
   ;; (.on wallet-connect-legacy-client (wallet-connect/session-created-event) #(re-frame/dispatch [:wallet-connect-legacy/created %]))
   ;; (.on wallet-connect-legacy-client (wallet-connect/session-deleted-event) #(re-frame/dispatch [:wallet-connect-legacy/update-sessions]))
   ;; (.on wallet-connect-legacy-client (wallet-connect/session-updated-event) #(re-frame/dispatch [:wallet-connect-legacy/update-sessions]))
   ;; (.on wallet-connect-legacy-client (wallet-connect/session-proposal-event) #(re-frame/dispatch [:wallet-connect-legacy/proposal %]))
-  )
+  
 
 (fx/defn approve-proposal
   {:events [:wallet-connect-legacy/approve-proposal]}
@@ -86,24 +86,13 @@
 
 (fx/defn change-session-account
   {:events [:wallet-connect-legacy/change-session-account]}
-  [{:keys [db]} topic account]
-  (let [client (get db :wallet-connect-legacy/client)
-        sessions (get db :wallet-connect-legacy/sessions)
-        session (first (filter #(= (:topic %) topic) sessions))
-        permissions (:permissions session)
-        blockchain (:blockchain permissions)
-        proposal-chain-ids (map #(last (string/split % #":")) (:chains blockchain))
-        address (:address account)
-        available-chain-ids (map #(get-in % [:config :NetworkId]) (vals (get db :networks/networks)))
-        supported-chain-ids (filter (fn [chain-id] #(boolean (some #{chain-id} available-chain-ids))) proposal-chain-ids)
-        accounts (map #(str "eip155:" % ":" (ethereum/normalized-hex address)) supported-chain-ids)]
-    (-> ^js client
-        (.update (clj->js {:topic topic
-                           :state {:accounts accounts}}))
-        (.then #(log/debug "[wallet-connect-legacy] session topic " topic " changed to account " account))
-        (.catch #(log/error "[wallet-connect-legacy] " %)))
-    {:db (assoc db :wallet-connect/showing-app-management-sheet? false)
-     :hide-wallet-connect-app-management-sheet nil}))
+  [{:keys [db]} session account]
+  (let [connector (:connector session)
+        address (:address account)]
+    (println "LALALA" session)
+    (^js .updateSession connector (clj->js {:chainId 1 :accounts [address]}))
+    {:hide-wallet-connect-app-management-sheet nil
+     :db (assoc db :wallet-connect/showing-app-management-sheet? false)}))
 
 (fx/defn disconnect-session
   {:events [:wallet-connect-legacy/disconnect]}
@@ -127,7 +116,9 @@
         (^js .on connector "session_request" (fn [error payload]
                                                (re-frame/dispatch [:wallet-connect-legacy/proposal payload connector])))
         (^js .on connector "connect" (fn [error payload]
-                                       (re-frame/dispatch [:wallet-connect-legacy/created payload])))))
+                                       (re-frame/dispatch [:wallet-connect-legacy/created payload])))
+        (^js .on connector "session_update" (fn [error payload]
+                                              (re-frame/dispatch [:wallet-connect-legacy/update-sessions (js->clj payload :keywordize-keys true) connector])))))
     (merge
      {:dispatch [:navigate-back]}
      (when wallet-connect-enabled?
@@ -135,10 +126,14 @@
 
 (fx/defn update-sessions
   {:events [:wallet-connect-legacy/update-sessions]}
-  [{:keys [db] :as cofx}]
-  (let [client (get db :wallet-connect-legacy/client)]
+  [{:keys [db] :as cofx} payload connector]
+  (let [sessions (get db :wallet-connect-legacy/sessions)
+        accounts-new (:accounts (first (:params payload)))
+        session (first (filter #(= (:connector %) connector) sessions))
+        updated-session (assoc-in session [:params 0 :accounts] accounts-new)]
+    (println session updated-session (.indexOf sessions session) "LELEL")
     {:db (-> db
-             (assoc :wallet-connect-legacy/sessions (js->clj (.-values (.-session client)) :keywordize-keys true))
+             (assoc :wallet-connect-legacy/sessions (assoc sessions (.indexOf sessions session) updated-session))
              (dissoc :wallet-connect/session-managed))}))
 
 (fx/defn wallet-connect-legacy-complete-transaction

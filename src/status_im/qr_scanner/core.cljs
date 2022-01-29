@@ -102,7 +102,7 @@
   [{:keys [db]} uri]
   {::router/handle-uri {:chain (ethereum/chain-keyword db)
                         :chats (get db :chats)
-                        :uri   "wc:b07661fb-28bb-48af-adfa-0f33cf00cf28@1?bridge=https%3A%2F%2Fg.bridge.walletconnect.org&key=68addfd071510961076d54cba38e9ff061578651d8dcd9f55404010dd6e63fb2"
+                        :uri   "wc:3c633c3f-c3a6-4329-82f9-93c5224ce316@1?bridge=https%3A%2F%2Ff.bridge.walletconnect.org&key=320fe7dbddf7debbcc548902b03d4160986f85fa6b2c49a8e7d0c71d3b9e0e1f"
                         :cb    #(re-frame/dispatch [::match-scanned-value %])}})
 
 ;; wc:12be5a9f4bc2902696076c3a1946760318a7cb675f58e792eb3d86a83e8537ca@2?controller=false&publicKey=934d797cf4f93627efbd08aa3e196e89e21f47f99019231209caff88de03a13c&relay=%7B%22protocol%22%3A%22waku%22%7D

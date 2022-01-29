@@ -89,7 +89,6 @@
   [{:keys [db]} session account]
   (let [connector (:connector session)
         address (:address account)]
-    (println "LALALA" session)
     (^js .updateSession connector (clj->js {:chainId 1 :accounts [address]}))
     {:hide-wallet-connect-app-management-sheet nil
      :db (assoc db :wallet-connect/showing-app-management-sheet? false)}))
@@ -117,6 +116,8 @@
                                                (re-frame/dispatch [:wallet-connect-legacy/proposal payload connector])))
         (^js .on connector "connect" (fn [error payload]
                                        (re-frame/dispatch [:wallet-connect-legacy/created payload])))
+        (^js .on connector "call_request" (fn [error payload]
+                                       (re-frame/dispatch [:wallet-connect-legacy/request-received (js->clj payload :keywordize-keys true) connector])))
         (^js .on connector "session_update" (fn [error payload]
                                               (re-frame/dispatch [:wallet-connect-legacy/update-sessions (js->clj payload :keywordize-keys true) connector])))))
     (merge
@@ -138,19 +139,18 @@
 
 (fx/defn wallet-connect-legacy-complete-transaction
   {:events [:wallet-connect-legacy.dapp/transaction-on-result]}
-  [{:keys [db]} message-id topic result]
-  (let [client (get db :wallet-connect-legacy/client)
-        response {:topic topic
-                  :response {:jsonrpc "2.0"
-                             :id message-id
-                             :result result}}]
-    (.respond client (clj->js response))
+  [{:keys [db]} message-id connector result]
+  (let [response {:id message-id
+                  :result result}]
+    (.approveRequest connector (clj->js response))
     {:db (assoc db :wallet-connect-legacy/response response)}))
 
 (fx/defn wallet-connect-legacy-send-async
-  [cofx {:keys [method params id] :as payload} message-id topic]
-  (let [message?      (browser/web3-sign-message? method)
-        dapps-address (get-in cofx [:db :multiaccount :dapps-address])
+  [{:keys [db] :as cofx} {:keys [method params id] :as payload} message-id connector]
+  (let [message? (browser/web3-sign-message? method)
+        sessions (get db :wallet-connect-legacy/sessions)
+        session (first (filter #(= (:connector %) connector) sessions))
+        linked-address (get-in session [:params 0 :accounts 0])
         accounts (get-in cofx [:db :multiaccount/visible-accounts])
         typed? (and (not= constants/web3-personal-sign method) (not= constants/web3-eth-sign method))]
     (if (or message? (= constants/web3-send-transaction method))
@@ -171,12 +171,12 @@
                                            :from address}}
                                 {:tx-obj  (-> params
                                               first
-                                              (update :from #(or % dapps-address))
+                                              (update :from #(or % linked-address))
                                               (dissoc :gasPrice))})
-                              {:on-result [:wallet-connect-legacy.dapp/transaction-on-result message-id topic]
-                               :on-error  [:wallet-connect-legacy.dapp/transaction-on-error message-id topic]}))))
+                              {:on-result [:wallet-connect-legacy.dapp/transaction-on-result message-id connector]
+                               :on-error  [:wallet-connect-legacy.dapp/transaction-on-error message-id connector]}))))
       (when (#{"eth_accounts" "eth_coinbase"} method)
-        (wallet-connect-legacy-complete-transaction cofx message-id topic (if (= method "eth_coinbase") dapps-address [dapps-address]))))))
+        (wallet-connect-legacy-complete-transaction cofx message-id connector (if (= method "eth_coinbase") linked-address [linked-address]))))))
 
 (def permissioned-method
   #{"eth_accounts" "eth_coinbase" "eth_sendTransaction" "eth_sign"
@@ -189,13 +189,11 @@
         (not (some #{constants/dapp-permission-web3} (get-in permissions [dapp-name :permissions]))))))
 
 (fx/defn wallet-connect-legacy-send-async-read-only
-  [{:keys [db] :as cofx} {:keys [method] :as payload} message-id topic]
-  (wallet-connect-legacy-send-async cofx payload message-id topic))
+  [{:keys [db] :as cofx} payload id connector]
+  (wallet-connect-legacy-send-async cofx payload id connector))
 
 (fx/defn process-request
   {:events [:wallet-connect-legacy/request-received]}
-  [{:keys [db] :as cofx} session-request]
-  (let [pending-requests (get db :wallet-connect-legacy/pending-requests)
-        {:keys [topic request]} session-request
-        {:keys [id]} request]
-    (wallet-connect-legacy-send-async-read-only cofx request id topic)))
+  [{:keys [db] :as cofx} payload connector]
+  (let [{:keys [id]} payload]
+    (wallet-connect-legacy-send-async-read-only cofx payload id connector)))

@@ -1123,6 +1123,7 @@
  :<- [:fleets/current-fleet]
  :<- [:mailserver/mailservers]
  (fn [[current-mailserver-id current-fleet mailservers]]
+   (println "MAILSE" mailservers current-fleet)
    (get-in mailservers [current-fleet current-mailserver-id :name])))
 
 (re-frame/reg-sub

@@ -44,7 +44,8 @@
    "waku_getSymKey" {}
    "waku_markTrustedPeer" {}
    "wakuext_post" {}
-   "wakuext_requestAllHistoricMessages" {}
+   "wakuext_requestAllHistoricMessages2" {}
+   "wakuext_toggleUseMailservers" {}
    "wakuext_editMessage" {}
    "wakuext_deleteMessageAndSend" {}
    "wakuext_fillGaps" {}
@@ -91,7 +92,6 @@
    "wakuext_markAllRead" {}
    "wakuext_markAllReadInCommunity" {}
    "wakuext_confirmMessagesProcessedByID" {}
-   "wakuext_updateMessageOutgoingStatus" {}
    "wakuext_chatMessages" {}
    "wakuext_saveChat" {}
    "wakuext_muteChat" {}
@@ -106,6 +106,7 @@
    "wakuext_addContact" {}
    "wakuext_updateMailservers" {}
    "wakuext_sendEmojiReaction" {}
+   "wakuext_disconnectActiveMailserver" {}
    "wakuext_sendEmojiReactionRetraction" {}
    "wakuext_emojiReactionsByChatID" {}
    "wakuext_getLinkPreviewWhitelist" {}
@@ -113,6 +114,7 @@
    "wakuext_requestCommunityInfoFromMailserver" {}
    "wakuext_deactivateChat" {}
    "wakuext_sendPinMessage" {}
+   "wakuext_setPinnedMailservers" {}
    "wakuext_chatPinnedMessages" {}
    ;;TODO not used anywhere?
    "wakuext_deleteChat" {}

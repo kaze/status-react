@@ -8,7 +8,8 @@
             [status-im.ethereum.core :as ethereum]
             [status-im.add-new.db :as new-chat.db]
             [status-im.utils.fx :as fx]
-            [status-im.group-chats.core :as group-chats]))
+            [status-im.group-chats.core :as group-chats]
+            [clojure.string :as string]))
 
 (fx/defn scan-qr-code
   {:events [::scan-code]}
@@ -79,8 +80,10 @@
             (navigation/pop-to-root-tab :wallet-stack)))
 
 (fx/defn handle-wallet-connect [cofx data]
-  ;; {:dispatch [:wallet-connect/pair data]})
-  {:dispatch [:wallet-connect-legacy/pair data]})
+  (let [wc-version (last (string/split (first (string/split data "?")) "@"))]
+    (if (= wc-version "1")
+      {:dispatch [:wallet-connect-legacy/pair data]}
+      {:dispatch [:wallet-connect/pair data]})))
 
 (fx/defn match-scan
   {:events [::match-scanned-value]}
@@ -102,7 +105,5 @@
   [{:keys [db]} uri]
   {::router/handle-uri {:chain (ethereum/chain-keyword db)
                         :chats (get db :chats)
-                        :uri   "wc:3c633c3f-c3a6-4329-82f9-93c5224ce316@1?bridge=https%3A%2F%2Ff.bridge.walletconnect.org&key=320fe7dbddf7debbcc548902b03d4160986f85fa6b2c49a8e7d0c71d3b9e0e1f"
+                        :uri   uri
                         :cb    #(re-frame/dispatch [::match-scanned-value %])}})
-
-;; wc:12be5a9f4bc2902696076c3a1946760318a7cb675f58e792eb3d86a83e8537ca@2?controller=false&publicKey=934d797cf4f93627efbd08aa3e196e89e21f47f99019231209caff88de03a13c&relay=%7B%22protocol%22%3A%22waku%22%7D

@@ -1,15 +1,12 @@
 (ns status-im.wallet-connect-legacy.core
-  (:require [clojure.string :as string]
-            [re-frame.core :as re-frame]
+  (:require [re-frame.core :as re-frame]
             [status-im.constants :as constants]
             [status-im.ethereum.core :as ethereum]
             [status-im.utils.fx :as fx]
             [status-im.signing.core :as signing]
             [status-im.utils.wallet-connect-legacy :as wallet-connect-legacy]
             [status-im.browser.core :as browser]
-            [taoensso.timbre :as log]
-            [status-im.async-storage.core :as async-storage]
-            [status-im.utils.config :as config]))
+            [taoensso.timbre :as log]))
 
 (fx/defn proposal-handler
   {:events [:wallet-connect-legacy/proposal]}
@@ -58,14 +55,6 @@
   {:events [:wallet-connect-legacy/request-test]}
   [{:keys [db] :as cofx}]
   {:show-wallet-connect-sheet nil})
-
-(defn subscribe-to-events [wallet-connect-legacy-client])
-  ;; (.on wallet-connect-legacy-client (wallet-connect/session-request-event) #(re-frame/dispatch [:wallet-connect-legacy/request %]))
-  ;; (.on wallet-connect-legacy-client (wallet-connect/session-created-event) #(re-frame/dispatch [:wallet-connect-legacy/created %]))
-  ;; (.on wallet-connect-legacy-client (wallet-connect/session-deleted-event) #(re-frame/dispatch [:wallet-connect-legacy/update-sessions]))
-  ;; (.on wallet-connect-legacy-client (wallet-connect/session-updated-event) #(re-frame/dispatch [:wallet-connect-legacy/update-sessions]))
-  ;; (.on wallet-connect-legacy-client (wallet-connect/session-proposal-event) #(re-frame/dispatch [:wallet-connect-legacy/proposal %]))
-  
 
 (fx/defn approve-proposal
   {:events [:wallet-connect-legacy/approve-proposal]}
@@ -117,7 +106,7 @@
         (^js .on connector "connect" (fn [error payload]
                                        (re-frame/dispatch [:wallet-connect-legacy/created payload])))
         (^js .on connector "call_request" (fn [error payload]
-                                       (re-frame/dispatch [:wallet-connect-legacy/request-received (js->clj payload :keywordize-keys true) connector])))
+                                            (re-frame/dispatch [:wallet-connect-legacy/request-received (js->clj payload :keywordize-keys true) connector])))
         (^js .on connector "session_update" (fn [error payload]
                                               (re-frame/dispatch [:wallet-connect-legacy/update-sessions (js->clj payload :keywordize-keys true) connector])))))
     (merge

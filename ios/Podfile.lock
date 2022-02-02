@@ -237,7 +237,7 @@ PODS:
   - react-native-status-keycard (2.5.37):
     - Keycard
     - React
-  - react-native-webview (11.3.0):
+  - react-native-webview (11.16.0):
     - React-Core
   - React-RCTActionSheet (0.63.4):
     - React-Core/RCTActionSheetHeaders (= 0.63.4)
@@ -666,7 +666,7 @@ SPEC CHECKSUMS:
   react-native-splash-screen: 200d11d188e2e78cea3ad319964f6142b6384865
   react-native-status: 45dbf1302ce3c258b459dfab137cd1c2c68c295d
   react-native-status-keycard: 961d01ca190889ddf220206822fd752f8f4f3f7a
-  react-native-webview: af9990b21a9aeafa8e8347746eb4116c0de086af
+  react-native-webview: 28a8636d97ee641f2ee8f20492d7a6c269c1d703
   React-RCTActionSheet: 89a0ca9f4a06c1f93c26067af074ccdce0f40336
   React-RCTAnimation: 1bde3ecc0c104c55df246eda516e0deb03c4e49b
   React-RCTBlob: a97d378b527740cc667e03ebfa183a75231ab0f0

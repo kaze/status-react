@@ -99,5 +99,7 @@
 (fx/defn hide-wallet-connect-app-management-sheet
   {:events [:hide-wallet-connect-app-management-sheet]}
   [{:keys [db]}]
-  {:db (assoc db :wallet-connect/showing-app-management-sheet? false)
+  {:db (-> db
+           (assoc db :wallet-connect/showing-app-management-sheet? false)
+           (dissoc :wallet-connect/session-managed))
    :hide-wallet-connect-app-management-sheet nil})

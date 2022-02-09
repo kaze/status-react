@@ -7,7 +7,7 @@
 (defn init [on-success on-error]
   (-> ^js WalletConnectClient
       (.init (clj->js {:controller true
-                       :relayUrl config/default-relay-provider
+                       :projectId "808dc2ae4e30fd1523dfa9ba28366ed2"
                        :logger "debug"
                        :metadata config/default-wallet-connect-metadata
                        :storageOptions {:asyncStorage ^js AsyncStorage}}))

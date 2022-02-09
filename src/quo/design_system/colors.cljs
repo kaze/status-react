@@ -47,7 +47,8 @@
    :backdrop       "rgba(0,0,0,0.4)"       ; Backdrop for modals and bottom sheet
    :border-01      "rgba(238,242,245,1)"
    :border-02      "rgba(67, 96, 223, 0.1)"
-   :highlight      "rgba(67,96,223,0.4)"})
+   :highlight      "rgba(67,96,223,0.4)"
+   :blurred-bg     "rgba(255,255,255,0.3)"})
 
 (def dark-theme
   {:positive-01    "rgba(68,208,88,1)"
@@ -79,7 +80,8 @@
    :backdrop       "rgba(0,0,0,0.4)"
    :border-01      "rgba(37,37,40,1)"
    :border-02      "rgba(97,119,229,0.1)"
-   :highlight      "rgba(67,96,223,0.4)"})
+   :highlight      "rgba(67,96,223,0.4)"
+   :blurred-bg     "rgba(0,0,0,0.3)"})
 
 (def theme (reagent/atom light-theme))
 

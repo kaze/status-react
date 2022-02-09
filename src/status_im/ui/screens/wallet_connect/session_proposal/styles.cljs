@@ -1,8 +1,8 @@
 (ns status-im.ui.screens.wallet-connect.session-proposal.styles
   (:require [quo.design-system.colors :as colors]))
 
-(def acc-sheet
-  {:background-color        colors/white
+(defn acc-sheet []
+  {:background-color        (:ui-background @colors/theme)
    :border-top-right-radius 16
    :border-top-left-radius  16
    :padding-bottom          1})
@@ -34,7 +34,7 @@
    :margin-top 10
    :margin-bottom 16})
 
-(def dapp-logo
+(defn dapp-logo []
   {:width            120
    :height           120
    :resize-mode      :cover
@@ -65,8 +65,8 @@
 (def success-sheet-button
   {:flex 1})
 
-(def proposal-sheet-container
-  {:background-color :white
+(defn proposal-sheet-container []
+  {:background-color (:ui-background @colors/theme)
    :width "100%"
    :align-items :center
    :padding-top 0
@@ -74,7 +74,7 @@
    :border-top-right-radius 16
    :border-top-left-radius  16})
 
-(def proposal-sheet-header
+(defn proposal-sheet-header []
   {:flex-direction :row
    :align-items :center
    :justify-content :center
@@ -99,7 +99,7 @@
    :margin-horizontal 72.5
    :text-align :center})
 
-(def footer
+(defn footer []
   {:width "100%"
    :height 76
    :border-color colors/gray-lighter
@@ -157,20 +157,20 @@
    :align-items :center
    :padding-top 8})
 
-(def blur-view
+(defn blur-view []
   {:position :absolute
-   :top 80
+   :top 60
    :left 0
    :right 0
    :bottom 0
-   :background-color "rgba(255, 255, 255, 0.3)"})
+   :background-color (:blurred-bg @colors/theme)})
 
 (def shadow
   {:width "100%"
    :height 50
    :opacity 0.3})
 
-(def management-sheet-header
+(defn management-sheet-header []
   {:width "100%"
    :flex-direction :row
    :padding 16

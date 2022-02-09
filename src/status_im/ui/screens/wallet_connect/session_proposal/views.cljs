@@ -79,13 +79,13 @@
           address (last (string/split (first accounts) #":"))
           account (first (filter #(= (:address %) address) visible-accounts))
           selected-account (reagent/atom account)]
-      [react/view styles/acc-sheet
-       [react/view styles/proposal-sheet-container
-        [react/view styles/proposal-sheet-header
+      [react/view (styles/acc-sheet)
+       [react/view (styles/proposal-sheet-container)
+        [react/view (styles/proposal-sheet-header)
          [quo/text {:weight :bold
                     :size   :large}
           (i18n/label :t/connection-request)]]
-        [react/image {:style styles/dapp-logo
+        [react/image {:style (styles/dapp-logo)
                       :source {:uri icon-uri}}]
         [react/view styles/sheet-body-container
          [react/view styles/proposal-title-container
@@ -106,7 +106,7 @@
                    :color :secondary
                    :style  styles/message-title}
          (i18n/label :t/manage-connections)]
-        [react/view styles/footer
+        [react/view (styles/footer)
          [react/view styles/success-button-container
           [react/view styles/proposal-button-right
            [quo/button
@@ -117,10 +117,10 @@
             (i18n/label :t/close)]]]]]
        (when managed-session
          (if platform/ios?
-           [react/blur-view {:style styles/blur-view
+           [react/blur-view {:style (styles/blur-view)
                              :blurAmount 2
-                             :blurType :light}]
-           [react/view styles/blur-view]))])))
+                             :blurType (if (colors/dark?) :dark :light)}]
+           [react/view (styles/blur-view)]))])))
 
 (defview app-management-sheet-view [{:keys [topic]}]
   (letsubs [sessions [:wallet-connect/sessions]
@@ -132,12 +132,12 @@
           icon-uri (when (and icons (> (count icons) 0)) (first icons))
           account-address (last (string/split (first accounts) #":"))
           selected-account (reagent/atom (first (filter #(= (:address %) account-address) visible-accounts)))]
-      [react/view {:style (merge styles/acc-sheet {:background-color "rgba(0,0,0,0)"})}
+      [react/view {:style (merge (styles/acc-sheet) {:background-color "rgba(0,0,0,0)"})}
        [react/linear-gradient {:colors ["rgba(0,0,0,0)" "rgba(0,0,0,0.3)"]
                                :start {:x 0 :y 0} :end {:x 0 :y 1}
                                :style styles/shadow}]
-       [react/view styles/proposal-sheet-container
-        [react/view styles/management-sheet-header
+       [react/view (styles/proposal-sheet-container)
+        [react/view (styles/management-sheet-header)
          [react/image {:style styles/management-icon
                        :source {:uri icon-uri}}]
          [react/view styles/app-info-container
@@ -160,13 +160,13 @@
         dapps-account @(re-frame/subscribe [:dapps-account])
         icon-uri (when (and icons (> (count icons) 0)) (first icons))
         selected-account (reagent/atom dapps-account)]
-    [react/view styles/acc-sheet
-     [react/view styles/proposal-sheet-container
-      [react/view styles/proposal-sheet-header
+    [react/view (styles/acc-sheet)
+     [react/view (styles/proposal-sheet-container)
+      [react/view (styles/proposal-sheet-header)
        [quo/text {:weight :bold
                   :size   :large}
         (i18n/label :t/connection-request)]]
-      [react/image {:style styles/dapp-logo
+      [react/image {:style (styles/dapp-logo)
                     :source {:uri icon-uri}}]
       [react/view styles/sheet-body-container
        [react/view styles/proposal-title-container
@@ -178,7 +178,7 @@
                    :style  styles/proposal-title}
          (i18n/label :t/wallet-connect-proposal-title)]]]
       [account-picker visible-accounts selected-account]
-      [react/view styles/footer
+      [react/view (merge (styles/footer) (when (= (count visible-accounts) 1) {:margin-top 12}))
        [react/view styles/proposal-buttons-container
         [react/view styles/proposal-button-left
          [quo/button
@@ -210,5 +210,6 @@
     [bottom-panel/animated-bottom-panel
      session
      app-management-sheet-view
+     #(re-frame/dispatch [:hide-wallet-connect-app-management-sheet])
      #(re-frame/dispatch [:hide-wallet-connect-app-management-sheet])
      false]))

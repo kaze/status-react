@@ -4,8 +4,8 @@
             [quo.react-native :as rn]
             [quo.design-system.colors :as quo.colors]
             [status-im.i18n.i18n :as i18n]
-            [quo.components.animated.pressable :as pressable]
-            [status-im.ui.components.icons.icons :as icons]
+            ;; [quo.components.animated.pressable :as pressable]
+            ;; [status-im.ui.components.icons.icons :as icons]
             [status-im.ethereum.stateofus :as stateofus]
             [status-im.ui.screens.chat.components.style :as styles]
             [re-frame.core :as re-frame]
@@ -48,8 +48,8 @@
          parsed-text)))
 
 (defn contact-request-message [{:keys [from]}]
-  (let [contact-name       @(re-frame/subscribe [:contacts/contact-name-by-identity from])
-        current-public-key @(re-frame/subscribe [:multiaccount/public-key])]
+  (let [_ #_contact-name       @(re-frame/subscribe [:contacts/contact-name-by-identity from])
+        _ #_current-public-key @(re-frame/subscribe [:multiaccount/public-key])]
     [rn/view {:style {:flex-direction :row}}
      [rn/view {:style (styles/contact-request-content)}
       [quo/button {:type     :secondary

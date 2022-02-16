@@ -67,12 +67,70 @@
   [{:keys [db] :as cofx}]
   {:show-wallet-connect-sheet nil})
 
+
 (defn subscribe-to-events [wallet-connect-client]
   (.on wallet-connect-client (wallet-connect/session-request-event) #(re-frame/dispatch [:wallet-connect/request %]))
   (.on wallet-connect-client (wallet-connect/session-created-event) #(re-frame/dispatch [:wallet-connect/created %]))
   (.on wallet-connect-client (wallet-connect/session-deleted-event) #(re-frame/dispatch [:wallet-connect/update-sessions]))
   (.on wallet-connect-client (wallet-connect/session-updated-event) #(re-frame/dispatch [:wallet-connect/update-sessions]))
   (.on wallet-connect-client (wallet-connect/session-proposal-event) #(re-frame/dispatch [:wallet-connect/proposal %])))
+
+(re-frame/reg-fx
+ :wc-2-subscribe-to-events
+ (fn [client]
+   (subscribe-to-events client)))
+
+(re-frame/reg-fx
+ :wc-2-client-approve-proposal
+ (fn [[client proposal response]]
+   (-> ^js client
+       (.approve (clj->js {:proposal proposal :response response}))
+       (.then #(log/debug "[wallet-connect] session proposal approved"))
+       (.catch #(log/error "[wallet-connect] session proposal approval error:" %)))))
+
+(re-frame/reg-fx
+ :wc-2-client-reject-proposal
+ (fn [[client proposal]]
+   (-> ^js client
+       (.reject (clj->js {:proposal proposal}))
+       (.then #(log/debug "[wallet-connect] session proposal rejected"))
+       (.catch #(log/error "[wallet-connect] " %)))))
+
+(re-frame/reg-fx
+ :wc-2-client-disconnect
+ (fn [[client topic]]
+   (-> ^js client
+       (.disconnect (clj->js {:topic topic}))
+       (.then #(log/debug "[wallet-connect] session disconnected - topic " topic))
+       (.catch #(log/error "[wallet-connect] " %)))))
+
+(re-frame/reg-fx
+ :wc-2-change-session
+ (fn [[client topic accounts]]
+   (-> ^js client
+       (.update (clj->js {:topic topic
+                          :state {:accounts accounts}}))
+       (.then #(log/debug "[wallet-connect] session topic " topic " changed to account " (first accounts)))
+       (.catch #(log/error "[wallet-connect] " %)))))
+
+(re-frame/reg-fx
+ :wc-2-change-session
+ (fn [[client topic accounts]]
+   (-> ^js client
+       (.update (clj->js {:topic topic
+                          :state {:accounts accounts}}))
+       (.then #(log/debug "[wallet-connect] session topic " topic " changed to account " (first accounts)))
+       (.catch #(log/error "[wallet-connect] " %)))))
+
+(re-frame/reg-fx
+ :wc-2-pair
+ (fn [[client uri]]
+   (.pair client (clj->js {:uri uri}))))
+
+(re-frame/reg-fx
+ :wc-2-respond
+ (fn [[client response]]
+   (.respond client (clj->js response))))
 
 (fx/defn approve-proposal
   {:events [:wallet-connect/approve-proposal]}
@@ -91,22 +149,16 @@
         metadata (get db :wallet-connect/proposal-metadata)
         response {:state {:accounts accounts}
                   :metadata config/default-wallet-connect-metadata}]
-    (-> ^js client
-        (.approve (clj->js {:proposal proposal :response response}))
-        (.then #(log/debug "[wallet-connect] session proposal approved"))
-        (.catch #(log/error "[wallet-connect] session proposal approval error:" %)))
-    {:hide-wallet-connect-sheet nil}))
+    {:hide-wallet-connect-sheet nil
+     :wc-2-client-approve-proposal [client proposal response]}))
 
 (fx/defn reject-proposal
   {:events [:wallet-connect/reject-proposal]}
   [{:keys [db]} account]
   (let [client (get db :wallet-connect/client)
         proposal (get db :wallet-connect/proposal)]
-    (-> ^js client
-        (.reject (clj->js {:proposal proposal}))
-        (.then #(log/debug "[wallet-connect] session proposal rejected"))
-        (.catch #(log/error "[wallet-connect] " %)))
-    {:hide-wallet-connect-sheet nil}))
+    {:hide-wallet-connect-sheet nil
+     :wc-2-client-reject-proposal client}))
 
 (fx/defn change-session-account
   {:events [:wallet-connect/change-session-account]}
@@ -121,24 +173,17 @@
         available-chain-ids (map #(get-in % [:config :NetworkId]) (vals (get db :networks/networks)))
         supported-chain-ids (filter (fn [chain-id] #(boolean (some #{chain-id} available-chain-ids))) proposal-chain-ids)
         accounts (map #(str "eip155:" % ":" (ethereum/normalized-hex address)) supported-chain-ids)]
-    (-> ^js client
-        (.update (clj->js {:topic topic
-                           :state {:accounts accounts}}))
-        (.then #(log/debug "[wallet-connect] session topic " topic " changed to account " account))
-        (.catch #(log/error "[wallet-connect] " %)))
     {:db (assoc db :wallet-connect/showing-app-management-sheet? false)
-     :hide-wallet-connect-app-management-sheet nil}))
+     :hide-wallet-connect-app-management-sheet nil
+     :wc-2-change-session [client topic accounts]}))
 
 (fx/defn disconnect-session
   {:events [:wallet-connect/disconnect]}
   [{:keys [db]} topic]
   (let [client (get db :wallet-connect/client)]
-    (-> ^js client
-        (.disconnect (clj->js {:topic topic}))
-        (.then #(log/debug "[wallet-connect] session disconnected - topic " topic))
-        (.catch #(log/error "[wallet-connect] " %)))
     {:hide-wallet-connect-app-management-sheet nil
      :hide-wallet-connect-success-sheet nil
+     :wc-2-client-disconnect [client topic]
      :db (-> db
              (assoc :wallet-connect/sessions (js->clj (.-values (.-session client)) :keywordize-keys true))
              (dissoc :wallet-connect/session-managed))}))
@@ -148,18 +193,17 @@
   [{:keys [db]} {:keys [data]}]
   (let [client (get db :wallet-connect/client)
         wallet-connect-enabled? (get db :wallet-connect/enabled?)]
-    (when wallet-connect-enabled?
-      (.pair client (clj->js {:uri data})))
     (merge
      {:dispatch [:navigate-back]}
      (when wallet-connect-enabled?
-       {:db (assoc db :wallet-connect/scanned-uri data)}))))
+       {:db (assoc db :wallet-connect/scanned-uri data)
+        :wc-2-pair [client data]}))))
 
 (fx/defn wallet-connect-client-initate
   {:events [:wallet-connect/client-init]}
   [{:keys [db] :as cofx} client]
-  (subscribe-to-events client)
-  {:db (assoc db :wallet-connect/client client :wallet-connect/sessions (js->clj (.-values (.-session client)) :keywordize-keys true))})
+  {:db (assoc db :wallet-connect/client client :wallet-connect/sessions (js->clj (.-values (.-session client)) :keywordize-keys true))
+   :wc-2-subscribe-to-events client})
 
 (fx/defn update-sessions
   {:events [:wallet-connect/update-sessions]}
@@ -177,8 +221,8 @@
                   :response {:jsonrpc "2.0"
                              :id message-id
                              :result result}}]
-    (.respond client (clj->js response))
-    {:db (assoc db :wallet-connect/response response)}))
+    {:db (assoc db :wallet-connect/response response)
+     :wc-2-respond [client response]}))
 
 (fx/defn wallet-connect-send-async
   [cofx {:keys [method params id] :as payload} message-id topic]

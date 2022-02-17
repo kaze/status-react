@@ -67,7 +67,6 @@
   [{:keys [db] :as cofx}]
   {:show-wallet-connect-sheet nil})
 
-
 (defn subscribe-to-events [wallet-connect-client]
   (.on wallet-connect-client (wallet-connect/session-request-event) #(re-frame/dispatch [:wallet-connect/request %]))
   (.on wallet-connect-client (wallet-connect/session-created-event) #(re-frame/dispatch [:wallet-connect/created %]))

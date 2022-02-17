@@ -8,6 +8,43 @@
             [status-im.browser.core :as browser]
             [taoensso.timbre :as log]))
 
+(re-frame/reg-fx
+ :wc-1-subscribe-to-events
+ (fn [connector]
+   (^js .on connector "session_request" (fn [_ payload]
+                                          (re-frame/dispatch [:wallet-connect-legacy/proposal payload connector])))
+   (^js .on connector "connect" (fn [_ payload]
+                                  (re-frame/dispatch [:wallet-connect-legacy/created payload])))
+   (^js .on connector "call_request" (fn [_ payload]
+                                       (re-frame/dispatch [:wallet-connect-legacy/request-received (js->clj payload :keywordize-keys true) connector])))
+   (^js .on connector "session_update" (fn [_ payload]
+                                         (re-frame/dispatch [:wallet-connect-legacy/update-sessions (js->clj payload :keywordize-keys true) connector])))))
+
+(re-frame/reg-fx
+ :wc-1-approve-session
+ (fn [[connector accounts proposal-chain-id]]
+   (^js .approveSession connector (clj->js {:accounts accounts :chainId proposal-chain-id}))))
+
+(re-frame/reg-fx
+ :wc-1-reject-session
+ (fn [connector]
+   (^js .rejectSession connector)))
+
+(re-frame/reg-fx
+ :wc-1-update-session
+ (fn [[connector address]]
+   (^js .updateSession connector (clj->js {:chainId 1 :accounts [address]})))) ;; TODO: Send current network chain id
+
+(re-frame/reg-fx
+ :wc-1-kill-session
+ (fn [connector]
+   (^js .killSession connector)))
+
+(re-frame/reg-fx
+ :wc-1-approve-request
+ (fn [[connector response]]
+   (^js .approveRequest connector (clj->js response))))
+
 (fx/defn proposal-handler
   {:events [:wallet-connect-legacy/proposal]}
   [{:keys [db] :as cofx} request-event connector]
@@ -63,23 +100,23 @@
         proposal-chain-id (get db :wallet-connect-legacy/proposal-chain-id)
         address (ethereum/normalized-hex (:address account))
         accounts [address]]
-    (^js .approveSession connector (clj->js {:accounts accounts :chainId proposal-chain-id}))
-    {:hide-wallet-connect-sheet nil}))
+    {:hide-wallet-connect-sheet nil
+     :wc-1-approve-session [connector accounts proposal-chain-id]}))
 
 (fx/defn reject-proposal
   {:events [:wallet-connect-legacy/reject-proposal]}
   [{:keys [db]} account]
   (let [connector (get db :wallet-connect-legacy/proposal-connector)]
-    (^js .rejectSession connector)
-    {:hide-wallet-connect-sheet nil}))
+    {:hide-wallet-connect-sheet nil
+     :wc-1-reject-session connector}))
 
 (fx/defn change-session-account
   {:events [:wallet-connect-legacy/change-session-account]}
   [{:keys [db]} session account]
   (let [connector (:connector session)
         address (:address account)]
-    (^js .updateSession connector (clj->js {:chainId 1 :accounts [address]}))
     {:hide-wallet-connect-app-management-sheet nil
+     :wc-1-update-session [connector address]
      :db (assoc db :wallet-connect/showing-app-management-sheet? false)}))
 
 (fx/defn disconnect-session
@@ -87,9 +124,9 @@
   [{:keys [db]} session]
   (let [sessions (get db :wallet-connect-legacy/sessions)
         connector (:connector session)]
-    (^js .killSession connector)
     {:hide-wallet-connect-app-management-sheet nil
      :hide-wallet-connect-success-sheet nil
+     :wc-1-kill-session connector
      :db (-> db
              (assoc :wallet-connect-legacy/sessions (remove session sessions))
              (dissoc :wallet-connect/session-managed))}))
@@ -99,20 +136,11 @@
   [{:keys [db]} {:keys [data]}]
   (let [connector (wallet-connect-legacy/create-connector data)
         wallet-connect-enabled? (get db :wallet-connect/enabled?)]
-    (when wallet-connect-enabled?
-      (do
-        (^js .on connector "session_request" (fn [error payload]
-                                               (re-frame/dispatch [:wallet-connect-legacy/proposal payload connector])))
-        (^js .on connector "connect" (fn [error payload]
-                                       (re-frame/dispatch [:wallet-connect-legacy/created payload])))
-        (^js .on connector "call_request" (fn [error payload]
-                                            (re-frame/dispatch [:wallet-connect-legacy/request-received (js->clj payload :keywordize-keys true) connector])))
-        (^js .on connector "session_update" (fn [error payload]
-                                              (re-frame/dispatch [:wallet-connect-legacy/update-sessions (js->clj payload :keywordize-keys true) connector])))))
     (merge
      {:dispatch [:navigate-back]}
      (when wallet-connect-enabled?
-       {:db (assoc db :wallet-connect-legacy/scanned-uri data)}))))
+       {:db (assoc db :wallet-connect-legacy/scanned-uri data)
+        :wc-1-subscribe-to-events connector}))))
 
 (fx/defn update-sessions
   {:events [:wallet-connect-legacy/update-sessions]}
@@ -131,7 +159,8 @@
   (let [response {:id message-id
                   :result result}]
     (.approveRequest connector (clj->js response))
-    {:db (assoc db :wallet-connect-legacy/response response)}))
+    {:db (assoc db :wallet-connect-legacy/response response)
+     :wc-1-approve-request [connector response]}))
 
 (fx/defn wallet-connect-legacy-send-async
   [{:keys [db] :as cofx} {:keys [method params id] :as payload} message-id connector]

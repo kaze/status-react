@@ -121,7 +121,6 @@
         accounts-new (:accounts (first (:params payload)))
         session (first (filter #(= (:connector %) connector) sessions))
         updated-session (assoc-in session [:params 0 :accounts] accounts-new)]
-    (println session updated-session (.indexOf sessions session) "LELEL")
     {:db (-> db
              (assoc :wallet-connect-legacy/sessions (assoc sessions (.indexOf sessions session) updated-session))
              (dissoc :wallet-connect/session-managed))}))

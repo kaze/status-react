@@ -150,6 +150,10 @@
     [help-message-text-element
      :t/ens-username-owned
      :t/ens-username-connected-with-different-key]
+    :invalid
+    [help-message-text-element
+     :t/ens-username-owned
+     :t/ens-username-registration-invalid]
     (if custom-domain?
       (case state
         :too-short

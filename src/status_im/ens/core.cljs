@@ -137,6 +137,8 @@
        #(re-frame/dispatch [::name-resolved username
                             (cond
                               (not public-key) :owned
+                              (string/ends-with? % "0000000000000000000000000000000000000000000000000000000000000000")
+                              :invalid
                               (= % public-key) :connected
                               :else :connected-with-different-key)
                             (eip55/address->checksum response)]))

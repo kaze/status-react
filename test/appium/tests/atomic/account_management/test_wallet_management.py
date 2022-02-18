@@ -76,6 +76,45 @@ class TestWalletManagementDeviceMerged(MultipleSharedDeviceTestCase):
             self.errors.append('Transaction hash was not copied')
         self.errors.verify_no_errors()
 
+    @marks.testrail_id(700759)
+    @marks.critical
+    def test_wallet_add_account_generate_new(self):
+        self.wallet.just_fyi("Switching off airplane mode and navigating to home view")
+        self.wallet.driver.set_network_connection(6)
+        self.home.home_button.double_click()
+
+        self.wallet.add_account_button.click()
+        self.wallet.generate_an_account_button.click()
+        self.wallet.add_account_generate_account_button.click()
+        account_name = ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(10))
+        self.wallet.account_name_input.send_keys(account_name)
+        self.wallet.account_color_button.select_color_by_position(1)
+
+        self.wallet.just_fyi("Checking basic validation when adding multiaccount")
+        if self.wallet.get_account_by_name(account_name).is_element_displayed():
+            self.drivers[0].fail('Account is added without password')
+        self.wallet.enter_your_password_input.send_keys('000000')
+        self.wallet.add_account_generate_account_button.click()
+        if not self.wallet.element_by_text_part('Password seems to be incorrect').is_element_displayed():
+            self.drivers[0].fail("Incorrect password validation is not performed")
+        self.wallet.enter_your_password_input.clear()
+        self.wallet.enter_your_password_input.send_keys(common_password)
+        self.wallet.add_account_generate_account_button.click()
+        account_button = self.wallet.get_account_by_name(account_name)
+
+        self.wallet.just_fyi("Checking that selected color is applied")
+        if not account_button.is_element_displayed():
+            self.wallet.accounts_status_account.swipe_left_on_element()
+        account_button.click()
+        if not account_button.color_matches('multi_account_color.png'):
+            self.drivers[0].fail('Account color does not match expected')
+        self.wallet.get_account_by_name(account_name).click()
+        self.wallet.get_account_options_by_name(account_name).click()
+        self.wallet.account_settings_button.click()
+        self.wallet.swipe_up()
+        if self.wallet.delete_account_button.is_element_displayed(10):
+            self.drivers[0].fail('Delete account option is shown on added account "On Status Tree"!')
+
     @marks.testrail_id(700757)
     @marks.critical
     def test_wallet_send_tx_set_recipient_options(self):
@@ -87,10 +126,6 @@ class TestWalletManagementDeviceMerged(MultipleSharedDeviceTestCase):
         ens_status = ens_user_ropsten
         ens_other = ens_user
         basic_add_to_fav_name = 'my_basic_address'
-
-        self.wallet.just_fyi("Switching off airplane mode and navigating to home view")
-        self.wallet.driver.set_network_connection(6)
-        self.home.home_button.double_click()
 
         self.home.just_fyi('Add new account and new ENS contact for recipient')
         chat = self.home.add_contact(ens_status['ens'])
@@ -216,42 +251,6 @@ class TestWalletManagementDeviceMerged(MultipleSharedDeviceTestCase):
         if self.wallet.asset_by_name(asset).is_element_displayed():
             self.errors.append('%s asset is shown in wallet but was deselected' % asset)
         self.errors.verify_no_errors()
-
-    @marks.testrail_id(700759)
-    @marks.critical
-    def test_wallet_add_account_generate_new(self):
-        self.wallet.get_back_to_home_view()
-        self.wallet.add_account_button.click()
-        self.wallet.generate_an_account_button.click()
-        self.wallet.add_account_generate_account_button.click()
-        account_name = ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(10))
-        self.wallet.account_name_input.send_keys(account_name)
-        self.wallet.account_color_button.select_color_by_position(1)
-
-        self.wallet.just_fyi("Checking basic validation when adding multiaccount")
-        if self.wallet.get_account_by_name(account_name).is_element_displayed():
-            self.drivers[0].fail('Account is added without password')
-        self.wallet.enter_your_password_input.send_keys('000000')
-        self.wallet.add_account_generate_account_button.click()
-        if not self.wallet.element_by_text_part('Password seems to be incorrect').is_element_displayed():
-            self.drivers[0].fail("Incorrect password validation is not performed")
-        self.wallet.enter_your_password_input.clear()
-        self.wallet.enter_your_password_input.send_keys(common_password)
-        self.wallet.add_account_generate_account_button.click()
-        account_button = self.wallet.get_account_by_name(account_name)
-
-        self.wallet.just_fyi("Checking that selected color is applied")
-        if not account_button.is_element_displayed():
-            self.wallet.accounts_status_account.swipe_left_on_element()
-        account_button.click()
-        if not account_button.color_matches('multi_account_color.png'):
-            self.drivers[0].fail('Account color does not match expected')
-        self.wallet.get_account_by_name(account_name).click()
-        self.wallet.get_account_options_by_name(account_name).click()
-        self.wallet.account_settings_button.click()
-        self.wallet.swipe_up()
-        if self.wallet.delete_account_button.is_element_displayed(10):
-            self.drivers[0].fail('Delete account option is shown on added account "On Status Tree"!')
 
     @marks.testrail_id(700760)
     @marks.critical

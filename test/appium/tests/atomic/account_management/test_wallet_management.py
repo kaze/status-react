@@ -81,7 +81,7 @@ class TestWalletManagementDeviceMerged(MultipleSharedDeviceTestCase):
     def test_wallet_add_account_generate_new(self):
         self.wallet.just_fyi("Switching off airplane mode and navigating to home view")
         self.wallet.driver.set_network_connection(6)
-        self.home.home_button.double_click()
+        self.wallet.wallet_button.double_click()
 
         self.wallet.add_account_button.click()
         self.wallet.generate_an_account_button.click()
@@ -126,6 +126,7 @@ class TestWalletManagementDeviceMerged(MultipleSharedDeviceTestCase):
         ens_status = ens_user_ropsten
         ens_other = ens_user
         basic_add_to_fav_name = 'my_basic_address'
+        self.home.home_button.double_click()
 
         self.home.just_fyi('Add new account and new ENS contact for recipient')
         chat = self.home.add_contact(ens_status['ens'])
